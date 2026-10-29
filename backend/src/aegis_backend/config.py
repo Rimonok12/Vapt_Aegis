@@ -22,6 +22,10 @@ class Settings(BaseSettings):
 
     max_upload_bytes: int = 25 * 1024 * 1024
 
+    # base64-encoded 32-byte key for the encrypted per-asset map. Must match
+    # ASSET_ENCRYPTION_KEY in the web app. Empty = the asset map is not stored.
+    asset_encryption_key: str = ""
+
     @property
     def configured(self) -> bool:
         return bool(self.supabase_url and self.supabase_secret_key)

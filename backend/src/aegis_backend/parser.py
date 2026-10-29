@@ -24,11 +24,29 @@ SEVERITY_MAP = {"critical": "critical", "high": "high", "medium": "medium", "low
 
 
 @dataclass
+class AssetRef:
+    """A real host affected by a finding. Never stored in plaintext."""
+
+    finding_id: str
+    host: str
+    port: Optional[str] = None
+    protocol: Optional[str] = None
+
+
+@dataclass
 class ParseResult:
     findings: list[Finding] = field(default_factory=list)
     counts: SeverityCounts = field(default_factory=SeverityCounts)
     asset_count: int = 0
     scanned_at: Optional[str] = None
+    assets: list[AssetRef] = field(default_factory=list)
+
+
+def _host_tag(report_host: ET.Element, name: str) -> Optional[str]:
+    for tag in report_host.iterfind("HostProperties/tag"):
+        if tag.attrib.get("name") == name and tag.text:
+            return tag.text.strip()
+    return None
 
 
 def _finding_id(*parts: object) -> str:
@@ -69,6 +87,11 @@ def parse_nessus(xml_bytes: bytes) -> ParseResult:
     for report_host in root.findall(".//ReportHost"):
         host_name = report_host.attrib.get("name", "")
         hosts.add(host_name or f"host-{len(hosts)}")
+        ip = _host_tag(report_host, "host-ip")
+        fqdn = _host_tag(report_host, "host-fqdn")
+        host_label = ip or host_name or "unknown host"
+        if fqdn and fqdn != host_label:
+            host_label = f"{host_label} ({fqdn})"
         for item in report_host.findall("ReportItem"):
             port = item.attrib.get("port")
             proto = item.attrib.get("protocol")
@@ -103,6 +126,7 @@ def parse_nessus(xml_bytes: bytes) -> ParseResult:
                 grouped[key] = finding
             else:
                 finding.occurrences += 1
+            result.assets.append(AssetRef(key, host_label, port, proto))
 
     result.findings = list(grouped.values())
     result.asset_count = len(hosts)
@@ -164,6 +188,11 @@ def parse_nmap(xml_bytes: bytes) -> ParseResult:
         if host.find("status") is not None and host.find("status").attrib.get("state") != "up":
             continue
         hosts += 1
+        address = host.find("address")
+        hostname = host.find("hostnames/hostname")
+        host_label = address.attrib.get("addr", "unknown host") if address is not None else "unknown host"
+        if hostname is not None and hostname.attrib.get("name"):
+            host_label = f"{host_label} ({hostname.attrib['name']})"
         for script in host.iter("script"):
             script_id = script.attrib.get("id", "")
             output = script.attrib.get("output", "")
@@ -188,6 +217,7 @@ def parse_nmap(xml_bytes: bytes) -> ParseResult:
                 )
             else:
                 finding.occurrences += 1
+            result.assets.append(AssetRef(key, host_label))
 
         for port in host.iter("port"):
             state = port.find("state")
@@ -217,6 +247,7 @@ def parse_nmap(xml_bytes: bytes) -> ParseResult:
                 )
             else:
                 finding.occurrences += 1
+            result.assets.append(AssetRef(key, host_label, portid, proto))
 
     result.findings = list(grouped.values())
     result.asset_count = hosts
@@ -276,6 +307,15 @@ def parse_json(payload: bytes) -> ParseResult:
             )
         else:
             finding.occurrences += 1
+        if host:
+            result.assets.append(
+                AssetRef(
+                    key,
+                    host if isinstance(host, str) else json.dumps(host, sort_keys=True),
+                    str(raw.get("port") or "") or None,
+                    str(raw.get("protocol") or "") or None,
+                )
+            )
 
     result.findings = list(grouped.values())
     result.asset_count = len(hosts)

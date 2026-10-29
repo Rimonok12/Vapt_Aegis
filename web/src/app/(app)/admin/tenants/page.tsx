@@ -7,7 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { requireAdmin } from '@/lib/auth/session';
+import Link from 'next/link';
+
 import { listMembers, listOrganizationStats } from '@/lib/data/members';
+import { getPlanUsage } from '@/lib/data/plan';
 import { number } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Tenants' };
@@ -28,9 +31,10 @@ async function TenantContent({
   organizationName: string;
   currentUserId: string;
 }) {
-  const [members, stats] = await Promise.all([
+  const [members, stats, usage] = await Promise.all([
     listMembers(organizationId),
     listOrganizationStats(organizationId),
+    getPlanUsage(organizationId),
   ]);
 
   return (
@@ -41,6 +45,15 @@ async function TenantContent({
           {number(stats.verified)} NID verified
         </Badge>
         <Badge tone="outline">{number(stats.reports)} reports</Badge>
+        <Badge tone="primary">
+          {usage.plan.name} plan ·{' '}
+          {usage.limit === null
+            ? 'unlimited reports'
+            : `${usage.used}/${usage.limit} reports${usage.plan.reportLimitPeriod === 'month' ? ' this month' : ''}`}
+        </Badge>
+        <Link href="/pricing" style={{ fontSize: '0.78rem', color: 'var(--aq-primary)', fontWeight: 600, alignSelf: 'center' }}>
+          Upgrade →
+        </Link>
       </Stats>
 
       <Card>

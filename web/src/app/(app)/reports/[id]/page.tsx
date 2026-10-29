@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Lock, Server } from 'lucide-react';
 import { styled } from '@yak/react';
 import { cache } from 'react';
 
@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableScroll, Td, Th } from '@/components/ui/table';
+import { getAssetMap, type AssetHit, type AssetMap } from '@/lib/assets';
+import { requireVerifiedUser } from '@/lib/auth/session';
 import { getReport } from '@/lib/data/reports';
+import { planOf } from '@/lib/plans';
 import { formatDate, formatDateTime, number } from '@/lib/format';
 import { riskBand, totalFindings, type Finding, type Severity } from '@/lib/types';
 import { radiusMd, textSm, textXs } from '@/styles/tokens';
@@ -280,7 +283,48 @@ const PlanMeta = styled.div`
 
 const SEV_ORDER: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 
-function FindingRow({ finding }: { finding: Finding }) {
+const HostList = styled.ul`
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+
+  & li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    font-size: ${textXs};
+  }
+
+  & li span {
+    color: var(--aq-muted-fg);
+  }
+`;
+
+const Upsell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding: 14px 18px;
+  border: 1px dashed var(--aq-border-strong);
+  border-radius: 14px;
+  font-size: ${textSm};
+  color: var(--aq-muted-fg);
+
+  & a {
+    color: var(--aq-primary);
+    font-weight: 600;
+  }
+`;
+
+function hostLine(hit: AssetHit): string {
+  return hit.port ? `${hit.port}/${hit.protocol ?? 'tcp'}` : '';
+}
+
+function FindingRow({ finding, hosts }: { finding: Finding; hosts?: AssetHit[] }) {
   return (
     <Row data-severity={finding.severity}>
       <Td>
@@ -295,6 +339,22 @@ function FindingRow({ finding }: { finding: Finding }) {
           <Details>
             <summary>Details</summary>
             <Fix>{finding.description}</Fix>
+          </Details>
+        )}
+        {hosts && hosts.length > 0 && (
+          <Details>
+            <summary>
+              {hosts.length} affected host{hosts.length === 1 ? '' : 's'}
+            </summary>
+            <HostList>
+              {hosts.map((hit, index) => (
+                <li key={`${hit.label}-${hit.port ?? ''}-${index}`}>
+                  <Code>{hit.label}</Code>
+                  {hit.host}
+                  {hostLine(hit) ? <span>· {hostLine(hit)}</span> : null}
+                </li>
+              ))}
+            </HostList>
           </Details>
         )}
       </Td>
@@ -337,8 +397,15 @@ function FindingRow({ finding }: { finding: Finding }) {
 
 export default async function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const report = await loadReport(id);
+  const [report, session] = await Promise.all([loadReport(id), requireVerifiedUser()]);
   if (!report) notFound();
+
+  // Per-asset view: admins only, on plans that include it (migration 002).
+  const isAdmin = session.profile.role === 'admin';
+  const plan = planOf(session.organization?.plan);
+  const assets: AssetMap | null =
+    isAdmin && plan.perAssetView ? await getAssetMap(report.id, report.organization_id) : null;
+  const findingTitle = new Map(report.findings.map((f) => [f.id, f] as const));
 
   const band = riskBand(report.risk_score);
   const findings = totalFindings(report.severity_counts);
@@ -510,6 +577,77 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
         </Stack>
       </TwoCol>
 
+      {assets ? (
+        <Card style={{ marginTop: 14 }}>
+          <CardHeader>
+            <CardTitle>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                <Server size={16} /> Affected assets
+              </span>
+            </CardTitle>
+            <CardDescription>
+              Visible to administrators only. Host details are stored encrypted and never shown
+              to clients.
+            </CardDescription>
+          </CardHeader>
+          <CardContent style={{ paddingInline: 8 }}>
+            <TableScroll>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Asset</Th>
+                    <Th>Host</Th>
+                    <Th>Worst issue</Th>
+                    <Th>Findings</Th>
+                    <Th>Ports</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assets.hosts.map((asset) => {
+                    const worst = asset.findingIds
+                      .map((fid) => findingTitle.get(fid))
+                      .filter((f): f is Finding => Boolean(f))
+                      .sort((a, b) => SEV_ORDER[a.severity] - SEV_ORDER[b.severity])[0];
+                    return (
+                      <tr key={asset.label}>
+                        <Td>
+                          <Code>{asset.label}</Code>
+                        </Td>
+                        <Td style={{ fontWeight: 540, minWidth: 180 }}>{asset.host}</Td>
+                        <Td style={{ minWidth: 200 }}>
+                          {worst ? (
+                            <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+                              <Badge tone={worst.severity}>{worst.severity}</Badge>
+                              {worst.title}
+                            </span>
+                          ) : (
+                            '—'
+                          )}
+                        </Td>
+                        <Td style={{ fontVariantNumeric: 'tabular-nums' }}>
+                          {asset.findingIds.length}
+                        </Td>
+                        <Td style={{ color: 'var(--aq-muted-fg)' }}>
+                          {asset.ports.length ? asset.ports.join(', ') : '—'}
+                        </Td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+            </TableScroll>
+          </CardContent>
+        </Card>
+      ) : isAdmin && !plan.perAssetView ? (
+        <Upsell>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Lock size={14} /> See exactly which hosts each finding affects with the per-asset
+            view.
+          </span>
+          <Link href="/pricing">Available on Business →</Link>
+        </Upsell>
+      ) : null}
+
       <Card style={{ marginTop: 14 }}>
         <CardHeader>
           <CardTitle>Sanitised findings</CardTitle>
@@ -538,7 +676,11 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
                 </thead>
                 <tbody>
                   {sorted.map((finding) => (
-                    <FindingRow key={finding.id} finding={finding} />
+                    <FindingRow
+                      key={finding.id}
+                      finding={finding}
+                      hosts={assets?.byFinding[finding.id]}
+                    />
                   ))}
                 </tbody>
               </Table>

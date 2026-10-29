@@ -88,6 +88,8 @@ def _run_pipeline(report_id: str, source: ScanSource, filename: str, payload: by
             pass
         raise HTTPException(status_code=502, detail="Could not save findings.") from exc
 
+    asset_rows = store.save_assets(report_id, result)
+
     try:
         ai_report = ai.draft(filename, source, result.counts, result.findings)
         risk = compute_risk_score(result.counts)
@@ -104,6 +106,7 @@ def _run_pipeline(report_id: str, source: ScanSource, filename: str, payload: by
         "findings": len(result.findings),
         "assets": result.asset_count,
         "riskScore": risk,
+        "assetRows": asset_rows,
         "status": "ready",
     }
 

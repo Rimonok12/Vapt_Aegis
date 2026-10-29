@@ -9,6 +9,8 @@ export type Json = string | number | boolean | null | { [key: string]: Json } | 
 export type UserRole = 'client' | 'admin';
 export type ReportStatus = 'processing' | 'ready' | 'failed';
 export type ScanSource = 'nessus' | 'nmap' | 'json';
+export type PlanId = 'trial' | 'starter' | 'business' | 'enterprise';
+export type AuditStatus = 'draft' | 'completed';
 
 export interface Database {
   public: {
@@ -19,18 +21,24 @@ export interface Database {
           name: string;
           slug: string;
           created_at: string;
+          plan: PlanId;
+          plan_renews_at: string | null;
         };
         Insert: {
           id?: string;
           name: string;
           slug: string;
           created_at?: string;
+          plan?: PlanId;
+          plan_renews_at?: string | null;
         };
         Update: {
           id?: string;
           name?: string;
           slug?: string;
           created_at?: string;
+          plan?: PlanId;
+          plan_renews_at?: string | null;
         };
         Relationships: [];
       };
@@ -145,6 +153,73 @@ export interface Database {
             referencedColumns: ['id'];
           },
         ];
+      };
+      report_assets: {
+        Row: {
+          id: number;
+          report_id: string;
+          organization_id: string;
+          finding_id: string;
+          label: string;
+          host_enc: string;
+          port: string | null;
+          protocol: string | null;
+          created_at: string;
+        };
+        Insert: {
+          report_id: string;
+          organization_id: string;
+          finding_id: string;
+          label: string;
+          host_enc: string;
+          port?: string | null;
+          protocol?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          label?: string;
+          host_enc?: string;
+          port?: string | null;
+          protocol?: string | null;
+        };
+        Relationships: [];
+      };
+      audits: {
+        Row: {
+          id: string;
+          organization_id: string;
+          framework: string;
+          title: string;
+          answers: Json;
+          score: number | null;
+          status: AuditStatus;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          framework: string;
+          title: string;
+          answers?: Json;
+          score?: number | null;
+          status?: AuditStatus;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          title?: string;
+          answers?: Json;
+          score?: number | null;
+          status?: AuditStatus;
+          updated_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [];
       };
       nid_verification_attempts: {
         Row: {

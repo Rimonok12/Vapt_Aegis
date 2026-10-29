@@ -14,6 +14,7 @@ const PUBLIC_ROUTES = [
   '/auth',
   '/api/auth',
   '/verify',
+  '/pricing',
 ];
 
 function isPublic(pathname: string): boolean {

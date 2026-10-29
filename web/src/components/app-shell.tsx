@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  ClipboardCheck,
   FileText,
   Gauge,
   LayoutDashboard,
@@ -36,7 +37,7 @@ import {
 export type NavItem = {
   href: string;
   label: string;
-  icon: 'dashboard' | 'reports' | 'risk' | 'uploads' | 'tenants';
+  icon: 'dashboard' | 'reports' | 'risk' | 'audits' | 'uploads' | 'tenants';
   admin?: boolean;
 };
 
@@ -44,6 +45,7 @@ export const APP_NAV: NavItem[] = [
   { href: '/dashboard', label: 'Overview', icon: 'dashboard' },
   { href: '/reports', label: 'Reports', icon: 'reports' },
   { href: '/risk', label: 'Risk posture', icon: 'risk' },
+  { href: '/audits', label: 'IT audits', icon: 'audits' },
   { href: '/admin/uploads', label: 'Upload scan', icon: 'uploads', admin: true },
   { href: '/admin/tenants', label: 'Tenants', icon: 'tenants', admin: true },
 ];
@@ -56,6 +58,8 @@ function NavIcon({ name }: { name: NavItem['icon'] }) {
       return <FileText size={16} />;
     case 'risk':
       return <Gauge size={16} />;
+    case 'audits':
+      return <ClipboardCheck size={16} />;
     case 'uploads':
       return <Upload size={16} />;
     case 'tenants':

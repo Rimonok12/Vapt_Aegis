@@ -94,6 +94,9 @@ export type OrganizationRow = {
   name: string;
   slug: string;
   created_at: string;
+  /** Absent until migration 002 is applied; treat as 'trial'. */
+  plan?: import('./database.types').PlanId;
+  plan_renews_at?: string | null;
 };
 
 export type SessionContext = {

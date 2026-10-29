@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { getSession } from '@/lib/auth/session';
+import { getPlanUsage } from '@/lib/data/plan';
 import { env } from '@/lib/env';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { ScanSource } from '@/lib/types';
@@ -54,6 +55,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { message: 'Your account is not attached to an organisation yet.' },
       { status: 400 }
+    );
+  }
+
+  const usage = await getPlanUsage(organizationId);
+  if (!usage.canUpload) {
+    const period = usage.plan.reportLimitPeriod === 'month' ? ' this month' : '';
+    return NextResponse.json(
+      {
+        message: `Your ${usage.plan.name} plan includes ${usage.limit} report${usage.limit === 1 ? '' : 's'}${period}, and you have used them all. Upgrade on the pricing page to keep uploading.`,
+        upgrade: '/pricing',
+      },
+      { status: 402 }
     );
   }
 

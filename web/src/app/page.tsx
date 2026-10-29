@@ -2,53 +2,15 @@ import { Suspense } from 'react';
 import { styled } from '@yak/react';
 
 import { Brand } from '@/components/brand';
+import { SiteNav } from '@/components/landing/site-nav';
 import { LandingHero } from '@/components/landing/hero';
 import { Reveal } from '@/components/motion/reveal';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { AnchorButton } from '@/components/ui/button';
 import { getSession } from '@/lib/auth/session';
+import { formatBdt, PLANS } from '@/lib/plans';
 import { easeOut, radiusLg, radiusMd, shellMax, space8, textLg, textSm } from '@/styles/tokens';
 
 import { redirect } from 'next/navigation';
-
-const Nav = styled.header`
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  backdrop-filter: blur(14px);
-  background: color-mix(in oklab, var(--aq-bg) 78%, transparent);
-  border-bottom: 1px solid var(--aq-border);
-`;
-
-const Inner = styled.div`
-  max-width: ${shellMax};
-  margin-inline: auto;
-  padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  @media (max-width: 480px) {
-    padding-inline: 16px;
-    gap: 10px;
-  }
-`;
-
-const Right = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  /* The hero repeats "Client sign in", so drop it where the bar would overflow. */
-  @media (max-width: 480px) {
-    gap: 8px;
-
-    & .aq-nav-signin {
-      display: none;
-    }
-  }
-`;
 
 const Section = styled.section`
   max-width: ${shellMax};
@@ -143,6 +105,23 @@ const Step = styled.li`
   }
 `;
 
+const PricingBand = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 28px 30px;
+  border: 1px solid var(--aq-border);
+  border-radius: ${radiusLg};
+  background:
+    radial-gradient(90% 140% at 100% 0%, var(--aq-glow), transparent 60%),
+    var(--aq-card);
+  box-shadow:
+    var(--aq-shadow-md),
+    inset 0 1px 0 var(--aq-highlight);
+`;
+
 const Footer = styled.footer`
   border-top: 1px solid var(--aq-border);
   padding: 26px 20px;
@@ -178,20 +157,7 @@ export default function LandingPage() {
       <Suspense fallback={null}>
         <SessionRedirect />
       </Suspense>
-      <Nav>
-        <Inner>
-          <Brand />
-          <Right>
-            <ThemeToggle />
-            <AnchorButton href="/signin" variant="ghost" size="sm" className="aq-nav-signin">
-              Sign in
-            </AnchorButton>
-            <AnchorButton href="/signup" size="sm">
-              Get started
-            </AnchorButton>
-          </Right>
-        </Inner>
-      </Nav>
+      <SiteNav />
 
       <LandingHero />
 
@@ -315,6 +281,24 @@ export default function LandingPage() {
               </FeatureBody>
             </Step>
           </Steps>
+        </Reveal>
+      </Section>
+
+      <Section style={{ paddingTop: 0 }}>
+        <Reveal>
+          <PricingBand>
+            <div>
+              <Kicker>Pricing</Kicker>
+              <H2>Plans from {formatBdt(PLANS.starter.priceBdt ?? 0)} a month.</H2>
+              <FeatureBody style={{ marginTop: 6 }}>
+                Start with a free trial report. Every client account is verified with a
+                Bangladesh National ID.
+              </FeatureBody>
+            </div>
+            <AnchorButton href="/pricing" size="lg">
+              See plans &amp; services
+            </AnchorButton>
+          </PricingBand>
         </Reveal>
       </Section>
 

@@ -161,3 +161,5 @@ create policy nid_attempts_select on public.nid_verification_attempts
 
 -- No insert/update/delete policies on purpose: every write path in the app
 -- uses the service-role key (which bypasses RLS) from server code only.
+
+-- Later migrations live in supabase/migrations/ (run them in order).
