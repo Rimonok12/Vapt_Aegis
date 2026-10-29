@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<NessusClientData_v2>
+<Report name="Quarterly perimeter scan">
+<ReportHost name="10.10.4.21">
+<HostProperties>
+<tag name="host-fqdn">web1.corp.internal</tag>
+<tag name="operating-system">Ubuntu 22.04</tag>
+</HostProperties>
+<ReportItem port="443" protocol="tcp" pluginID="51192" pluginName="SSL Certificate Cannot Be Trusted" family="General" risk="medium">
+<synopsis>The SSL certificate on web1.corp.internal is not trusted by clients.</synopsis>
+<description>The remote host presents a self-signed certificate for 10.10.4.21. Administrators use password=Chang3Me! on this host.</description>
+<solution>Install a certificate from a trusted CA.</solution>
+<cvss_base_score>5.0</cvss_base_score>
+</ReportItem>
+<ReportItem port="22" protocol="tcp" pluginID="10881" pluginName="SSH Server Weak MAC Algorithms Enabled" family="Service clients" risk="high">
+<synopsis>The SSH service on 10.10.4.21 accepts weak MAC algorithms.</synopsis>
+<description>Weak MACs such as hmac-md5 are enabled on web1.corp.internal:22.</description>
+<solution>Disable weak MAC algorithms in sshd_config.</solution>
+<cvss_base_score>7.4</cvss_base_score>
+<cve>CVE-2023-48795</cve>
+</ReportItem>
+</ReportHost>
+<ReportHost name="10.10.4.22">
+<ReportItem port="443" protocol="tcp" pluginID="51192" pluginName="SSL Certificate Cannot Be Trusted" family="General" risk="medium">
+<synopsis>The SSL certificate on db1.corp.internal is not trusted.</synopsis>
+<solution>Install a certificate from a trusted CA.</solution>
+</ReportItem>
+<ReportItem port="3306" protocol="tcp" pluginID="10862" pluginName="MySQL Server Unauthenticated Access" family="Databases" risk="critical">
+<synopsis>MySQL on db1.corp.internal allows unauthenticated connections.</synopsis>
+<description>The database at 10.10.4.22:3306 accepts connections without credentials.</description>
+<solution>Require authentication and restrict network access.</solution>
+<cvss_base_score>9.8</cvss_base_score>
+</ReportItem>
+</ReportHost>
+</Report>
+</NessusClientData_v2>

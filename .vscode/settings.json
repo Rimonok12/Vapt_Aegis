@@ -1,0 +1,12 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "npm i": true,
+    "brew": true,
+    "npm uninstall": true,
+    "/^node -p \"Object\\.keys\\(require\\('radix-ui'\\)\\)\\.slice\\(0,80\\)\\.join\\(', '\\)\" 2>&1 \\| head -5; echo '=== supabase/ssr exports ==='; node -p \"JSON\\.stringify\\(require\\('@supabase/ssr/package\\.json'\\)\\.exports\\|\\|require\\('@supabase/ssr/package\\.json'\\)\\.main\\)\"; echo '=== ssr dts ==='; find node_modules/@supabase/ssr/dist/main -name 'index\\.d\\.ts' \\| head; sed -n 1,60p node_modules/@supabase/ssr/dist/main/index\\.d\\.ts; echo '=== createServerClient sig ==='; sed -n 1,80p node_modules/@supabase/ssr/dist/main/createServerClient\\.d\\.ts$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  },
+  "python.terminal.useEnvFile": true
+}
