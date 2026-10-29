@@ -4,8 +4,8 @@ import { getSession } from '@/lib/auth/session';
 import { env } from '@/lib/env';
 import { createAdminClient } from '@/lib/supabase/admin';
 import type { ScanSource } from '@/lib/types';
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/utils';
 
-const MAX_BYTES = 25 * 1024 * 1024;
 
 // Leaves room to wake a sleeping backend (Render free instances cold-start in
 // ~30-60 s) before handing over the file.
@@ -68,8 +68,11 @@ export async function POST(request: NextRequest) {
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ message: 'No scan file provided.' }, { status: 422 });
   }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ message: 'File exceeds the 25 MB limit.' }, { status: 413 });
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      { message: `File exceeds the ${MAX_UPLOAD_MB} MB limit.` },
+      { status: 413 }
+    );
   }
 
   const source = detectSource(file.name);

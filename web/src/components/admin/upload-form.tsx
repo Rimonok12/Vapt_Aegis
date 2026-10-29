@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FieldError, FieldDescription } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from '@/lib/utils';
 import { radiusMd, textSm, textXs } from '@/styles/tokens';
 
 const ACCEPT = '.nessus,.nmap,.xml,.json';
-const MAX_BYTES = 25 * 1024 * 1024;
 
 const Drop = styled.label`
   position: relative;
@@ -119,9 +119,9 @@ export function UploadForm() {
 
   function accept(picked: File | null) {
     setError(null);
-    if (picked && picked.size > MAX_BYTES) {
+    if (picked && picked.size > MAX_UPLOAD_BYTES) {
       setFile(null);
-      setError('That file is larger than the 25 MB limit.');
+      setError(`That file is larger than the ${MAX_UPLOAD_MB} MB limit.`);
       return;
     }
     if (picked && !ACCEPT.split(',').some((ext) => picked.name.toLowerCase().endsWith(ext))) {
@@ -163,7 +163,13 @@ export function UploadForm() {
       if (title.trim()) payload.append('title', title.trim());
 
       const response = await fetch('/api/admin/upload', { method: 'POST', body: payload });
-      const json = (await response.json()) as { message?: string; redirect?: string };
+      // Platform errors (413 payload too large, 504 timeout) are not JSON.
+      const json = (await response.json().catch(() => ({
+        message:
+          response.status === 413
+            ? `That file is too large for this server (max ${MAX_UPLOAD_MB} MB).`
+            : `Upload failed (HTTP ${response.status}). Please try again.`,
+      }))) as { message?: string; redirect?: string };
 
       if (!response.ok) {
         setError(json.message ?? 'Upload failed. Please try again.');
@@ -209,7 +215,7 @@ export function UploadForm() {
               <span style={{ fontSize: textSm, fontWeight: 600, color: 'var(--aq-fg)' }}>
                 {file ? 'Choose a different file' : 'Drop a scan file here, or browse'}
               </span>
-              <Hint>{ACCEPT.split(',').join(' · ')} — up to 25 MB</Hint>
+              <Hint>{ACCEPT.split(',').join(' · ')} — up to {MAX_UPLOAD_MB} MB</Hint>
               <input
                 ref={inputRef}
                 type="file"

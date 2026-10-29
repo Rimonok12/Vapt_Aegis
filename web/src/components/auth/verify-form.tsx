@@ -31,7 +31,9 @@ export function VerifyForm({ email }: { email: string | null }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = (await response.json()) as { message?: string; redirect?: string };
+      const data = (await response.json().catch(() => ({
+        message: `Verification failed (HTTP ${response.status}). Please try again.`,
+      }))) as { message?: string; redirect?: string };
 
       if (!response.ok) {
         setError(data.message ?? 'Verification failed.');

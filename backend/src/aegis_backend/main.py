@@ -14,6 +14,7 @@ web app's HTTP timeout and finish in the background.
 from __future__ import annotations
 
 import hmac
+import os
 import uuid
 from typing import Optional
 
@@ -44,6 +45,9 @@ def require_token(authorization: Optional[str] = Header(default=None)) -> None:
     settings = get_settings()
     if not settings.internal_token:
         # Local development: no shared secret configured, so the endpoint is open.
+        # A hosted deployment without a token must never accept uploads.
+        if os.environ.get("VERCEL") or os.environ.get("RENDER"):
+            raise HTTPException(status_code=503, detail="INTERNAL_TOKEN is not configured.")
         return
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Missing bearer token.")

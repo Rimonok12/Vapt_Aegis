@@ -29,7 +29,7 @@ export async function verifyNationalId(
     // any well-formed NID + DOB is accepted. On by default in development; a
     // production deploy must opt in explicitly with PORICHOY_MOCK=true so it
     // never silently skips identity checks.
-    if (!isProd() || porichoyMock) return { ok: true };
+    if (!isProd() || porichoyMock) return offlineCheck(nid, dob);
     return { ok: false, code: 503, message: 'Verification service is not configured yet.' };
   }
 
@@ -84,4 +84,26 @@ export async function verifyNationalId(
         : undefined;
 
   return { ok: true, name };
+}
+
+/**
+ * Free offline check used when no Porichoy key is configured. It cannot prove
+ * identity — only that the NID is well formed and consistent with the date of
+ * birth: 17-digit (old-format) NIDs begin with the holder's birth year.
+ */
+function offlineCheck(
+  nid: string,
+  dob: { year: number; month: number; date: number }
+): PorichoyResult {
+  if (nid.length === 17 && Number(nid.slice(0, 4)) !== dob.year) {
+    return {
+      ok: false,
+      code: 422,
+      message: 'This 17-digit National ID does not match the date of birth you entered.',
+    };
+  }
+  if (/^(\d)\1+$/.test(nid)) {
+    return { ok: false, code: 422, message: 'Enter your real National ID number.' };
+  }
+  return { ok: true };
 }

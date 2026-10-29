@@ -59,42 +59,81 @@ def _extract_json(raw: str) -> dict | None:
     return None
 
 
-def _fallback(counts: SeverityCounts, findings: list[Finding], risk: int, model: str) -> AiReport:
+def _band(risk: int) -> str:
+    if risk >= 75:
+        return "critical"
+    if risk >= 50:
+        return "high"
+    if risk >= 25:
+        return "moderate"
+    return "low"
+
+
+def _fallback(counts: SeverityCounts, findings: list[Finding], risk: int, model: str) -> AiReport:  # noqa: ARG001
+    """Deterministic executive report, used when no LLM is reachable (e.g. hosted)."""
+
+    order = ["critical", "high", "medium", "low", "info"]
+    ranked = sorted(findings, key=lambda f: (order.index(f.severity), -f.occurrences))
     total = counts.total()
-    sev = "critical" if counts.critical else "high" if counts.high else "medium" if counts.medium else "low"
-    top_titles = [f.title for f in findings[:3]]
-    plan = []
-    for i, finding in enumerate([f for f in findings if f.severity in ("critical", "high")][:5], start=1):
-        plan.append(
-            RemediationItem(
-                priority=i,
-                title=finding.title,
-                detail=finding.recommendation or f"Patch or mitigate this {finding.severity} finding.",
-                severity=finding.severity,  # type: ignore[arg-type]
-                effort="medium",
-                window="7 days" if finding.severity == "critical" else "30 days",
-            )
+    band = _band(risk)
+    urgent = counts.critical + counts.high
+    top_titles = [f.title for f in ranked[:3]]
+
+    breakdown = ", ".join(
+        f"{getattr(counts, sev)} {sev}" for sev in order[:4] if getattr(counts, sev)
+    ) or "no rated issues"
+    summary = (
+        f"This assessment recorded {total} finding{'s' if total != 1 else ''} ({breakdown}), "
+        f"giving an overall risk score of {risk}/100 — a {band} risk posture. "
+    )
+    if top_titles:
+        summary += f"The most pressing issues are {', '.join(top_titles[:-1])}"
+        summary += f" and {top_titles[-1]}. " if len(top_titles) > 1 else f"{top_titles[0]}. "
+    summary += (
+        "Addressing the critical and high severity items first will remove most of the "
+        "exposure." if urgent else "No critical or high severity issues were found; focus on "
+        "hardening and routine patching."
+    )
+
+    plan_source = [f for f in ranked if f.severity in ("critical", "high")] or [
+        f for f in ranked if f.severity in ("medium", "low")
+    ]
+    window = {"critical": "7 days", "high": "14 days", "medium": "30 days", "low": "90 days"}
+    effort = {"critical": "medium", "high": "medium", "medium": "low", "low": "low"}
+    plan = [
+        RemediationItem(
+            priority=i,
+            title=finding.title,
+            detail=(finding.recommendation or f"Patch or mitigate this {finding.severity} finding.")[:600],
+            severity=finding.severity,  # type: ignore[arg-type]
+            effort=effort[finding.severity],  # type: ignore[arg-type]
+            window=window[finding.severity],
         )
+        for i, finding in enumerate(plan_source[:5], start=1)
+    ]
+
     return AiReport(
-        model=model,
+        # No LLM ran, so don't credit one.
+        model="Aegis rules engine",
         generatedAt=datetime.now(timezone.utc).isoformat(),
-        executiveSummary=(
-            f"The {sev} assessment identified {total} findings across the estate with a risk "
-            f"score of {risk}/100. " + (f"Notable issues include {', '.join(top_titles)}. " if top_titles else "")
-            + "Prioritised remediation of the highest severity items is recommended."
-        ),
+        executiveSummary=summary,
         businessRisk=(
-            "Exposure of unpatched or misconfigured services increases the likelihood of "
-            "unauthorised access and data breach, with associated operational and reputational cost."
+            "Unpatched or misconfigured services are the most common route to unauthorised "
+            "access. Left open, these findings raise the likelihood of data exposure, service "
+            "disruption and the regulatory and reputational cost that follows."
         ),
         compliancePosture=(
-            "Findings in this report map to ISO 27001 Annex A technical controls and PCI-DSS "
-            "requirement 6/11. Closing critical and high items should be treated as a compliance blocker."
+            "These findings map to ISO 27001 Annex A technical vulnerability management "
+            "(A.8.8) and PCI-DSS requirements 6 and 11. Open critical and high items should be "
+            "treated as audit blockers until remediated and re-tested."
         ),
         keyTakeaways=[
-            f"{counts.critical} critical and {counts.high} high findings require prompt action.",
-            f"Overall risk score {risk}/100.",
-            "Remediate highest-severity items first.",
+            f"Risk score {risk}/100 ({band}).",
+            f"{counts.critical} critical and {counts.high} high severity findings need prompt action."
+            if urgent
+            else "No critical or high severity findings.",
+            f"Start with: {top_titles[0]}." if top_titles else "Keep scanning on a regular cadence.",
+            "Re-scan after remediation to confirm each fix.",
         ],
         remediationPlan=plan,
     )
