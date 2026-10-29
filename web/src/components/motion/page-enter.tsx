@@ -35,8 +35,10 @@ export function PageEnter({
       clearProps: 'all',
     });
 
+    // revert(), not kill(): a killed `.from()` leaves children stuck at
+    // opacity 0, which hides the page after Strict Mode's remount in dev.
     return () => {
-      tween.kill();
+      tween.revert();
     };
   }, [stagger]);
 

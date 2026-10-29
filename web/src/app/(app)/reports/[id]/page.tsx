@@ -17,6 +17,7 @@ import {
   StatCard,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableScroll, Td, Th } from '@/components/ui/table';
 import { getReport } from '@/lib/data/reports';
 import { formatDate, formatDateTime, number } from '@/lib/format';
 import { riskBand, totalFindings, type Finding, type Severity } from '@/lib/types';
@@ -43,11 +44,15 @@ export async function generateMetadata({
 
 const Bar = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+
+  & > div:first-child {
+    min-width: 0;
+  }
 `;
 
 const Back = styled(Link)`
@@ -63,11 +68,12 @@ const Back = styled(Link)`
   }
 `;
 
-const Title = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 680;
+const Title = styled.h1`
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 `;
 
 const Meta = styled.p`
@@ -104,12 +110,13 @@ const Stack = styled.div`
 
 const TwoCol = styled.div`
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 14px;
   margin-top: 14px;
+  align-items: start;
 
   @media (max-width: 1080px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -159,38 +166,13 @@ const Takeaways = styled.ul`
   }
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: ${textSm};
-`;
-
-const Th = styled.th`
-  text-align: left;
+const Code = styled.code`
+  font-family: var(--font-geist-mono), monospace;
   font-size: ${textXs};
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--aq-muted-fg);
-  padding: 0 12px 10px;
-  border-bottom: 1px solid var(--aq-border);
+  background: var(--aq-muted);
+  padding: 1px 5px;
+  border-radius: 4px;
   white-space: nowrap;
-`;
-
-const Td = styled.td`
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--aq-border);
-  vertical-align: top;
-  line-height: 1.5;
-
-  & code {
-    font-family: var(--font-geist-mono), monospace;
-    font-size: ${textXs};
-    background: var(--aq-muted);
-    padding: 1px 5px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
 `;
 
 const Row = styled.tr`
@@ -302,7 +284,7 @@ function FindingRow({ finding }: { finding: Finding }) {
   return (
     <Row data-severity={finding.severity}>
       <Td>
-        <div style={{ fontWeight: 560, lineHeight: 1.35 }}>{finding.title}</div>
+        <div style={{ fontWeight: 560, lineHeight: 1.35, minWidth: 220 }}>{finding.title}</div>
         {finding.affected && (
           <div style={{ color: 'var(--aq-muted-fg)', fontSize: textXs, marginTop: 3 }}>
             {finding.affected}
@@ -329,7 +311,7 @@ function FindingRow({ finding }: { finding: Finding }) {
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {finding.cves.slice(0, 4).map((cve) => (
-              <code key={cve}>{cve}</code>
+              <Code key={cve}>{cve}</Code>
             ))}
             {finding.cves.length > 4 && (
               <span style={{ color: 'var(--aq-muted-fg)', fontSize: textXs }}>
@@ -339,7 +321,7 @@ function FindingRow({ finding }: { finding: Finding }) {
           </div>
         )}
       </Td>
-      <Td>
+      <Td style={{ minWidth: 200 }}>
         {finding.recommendation ? (
           <Details>
             <summary>Remediation</summary>
@@ -384,7 +366,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
       </Bar>
 
       {report.status === 'processing' && (
-        <Card style={{ padding: 26, textAlign: 'center' }}>
+        <Card style={{ padding: 26, textAlign: 'center', alignItems: 'center', marginBottom: 14 }}>
           <Badge tone="info" style={{ marginBottom: 10 }}>
             Processing
           </Badge>
@@ -403,7 +385,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
       )}
 
       {report.status === 'failed' && (
-        <Card style={{ padding: 26, textAlign: 'center' }}>
+        <Card style={{ padding: 26, textAlign: 'center', alignItems: 'center', marginBottom: 14 }}>
           <Badge tone="destructive" style={{ marginBottom: 10 }}>
             Processing failed
           </Badge>
@@ -443,43 +425,62 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
       </Grid>
 
       <TwoCol>
-        <Stack>
-          <Card>
-            <CardHeader>
-              <CardTitle>Sanitised findings</CardTitle>
-              <CardDescription>
-                Hostnames, IP addresses and credentials are removed before storage.
-              </CardDescription>
-            </CardHeader>
-            <CardContent style={{ paddingInline: 12 }}>
-              {sorted.length === 0 ? (
-                <p style={{ color: 'var(--aq-muted-fg)', fontSize: textSm, padding: '8px 4px' }}>
-                  No findings were recorded for this scan.
-                </p>
-              ) : (
-                <Table>
-                  <thead>
-                    <tr>
-                      <Th>Issue</Th>
-                      <Th>Severity</Th>
-                      <Th>CVSS</Th>
-                      <Th>Hosts</Th>
-                      <Th>CVEs</Th>
-                      <Th>Fix</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sorted.map((finding) => (
-                      <FindingRow key={finding.id} finding={finding} />
-                    ))}
-                  </tbody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+        <Stack style={{ marginTop: 0 }}>
+          {ai ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Executive summary</CardTitle>
+                <CardDescription>
+                  Drafted locally by {ai.model} · {formatDateTime(ai.generatedAt)}. No scan data
+                  leaves your infrastructure.
+                </CardDescription>
+              </CardHeader>
+              <CardContent style={{ display: 'grid', gap: 18 }}>
+                <Prose>{ai.executiveSummary}</Prose>
+                <Section>
+                  <SectionTitle>Business risk</SectionTitle>
+                  <Prose>{ai.businessRisk}</Prose>
+                </Section>
+                <Section>
+                  <SectionTitle>Compliance posture</SectionTitle>
+                  <Prose>{ai.compliancePosture}</Prose>
+                </Section>
+                {ai.remediationPlan.length > 0 && (
+                  <Section>
+                    <SectionTitle>Remediation plan</SectionTitle>
+                    <Plan>
+                      {ai.remediationPlan.map((item, index) => (
+                        <PlanItem key={index}>
+                          <strong>{item.title}</strong>
+                          <p>{item.detail}</p>
+                          <PlanMeta>
+                            <Badge tone={item.severity}>{item.severity}</Badge>
+                            <Badge tone="outline">{item.effort} effort</Badge>
+                            <Badge tone="outline">{item.window}</Badge>
+                          </PlanMeta>
+                        </PlanItem>
+                      ))}
+                    </Plan>
+                  </Section>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Executive summary</CardTitle>
+                <CardDescription>
+                  {report.status === 'processing'
+                    ? 'The AI draft appears here once processing completes.'
+                    : 'No AI draft is available for this report.'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent />
+            </Card>
+          )}
         </Stack>
 
-        <Stack>
+        <Stack style={{ marginTop: 0 }}>
           <Card>
             <CardHeader>
               <CardTitle>Severity mix</CardTitle>
@@ -491,70 +492,60 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
             </CardContent>
           </Card>
 
-          {ai && (
+          {ai && ai.keyTakeaways.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Model</CardTitle>
-                <CardDescription>
-                  {ai.model} · generated {formatDateTime(ai.generatedAt)}
-                </CardDescription>
+                <CardTitle>Key takeaways</CardTitle>
+                <CardDescription>The points leadership should remember.</CardDescription>
               </CardHeader>
-              <CardContent style={{ display: 'grid', gap: 14 }}>
-                <Section>
-                  <SectionTitle>Key takeaways</SectionTitle>
-                  <Takeaways>
-                    {ai.keyTakeaways.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </Takeaways>
-                </Section>
+              <CardContent>
+                <Takeaways>
+                  {ai.keyTakeaways.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </Takeaways>
               </CardContent>
             </Card>
           )}
         </Stack>
       </TwoCol>
 
-      {ai && (
-        <Stack style={{ marginTop: 14 }}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Executive summary</CardTitle>
-              <CardDescription>
-                Drafted locally by {ai.model}. No scan data leaves your infrastructure.
-              </CardDescription>
-            </CardHeader>
-            <CardContent style={{ display: 'grid', gap: 18 }}>
-              <Prose>{ai.executiveSummary}</Prose>
-              <Section>
-                <SectionTitle>Business risk</SectionTitle>
-                <Prose>{ai.businessRisk}</Prose>
-              </Section>
-              <Section>
-                <SectionTitle>Compliance posture</SectionTitle>
-                <Prose>{ai.compliancePosture}</Prose>
-              </Section>
-              {ai.remediationPlan.length > 0 && (
-                <Section>
-                  <SectionTitle>Remediation plan</SectionTitle>
-                  <Plan>
-                    {ai.remediationPlan.map((item, index) => (
-                      <PlanItem key={index}>
-                        <strong>{item.title}</strong>
-                        <p>{item.detail}</p>
-                        <PlanMeta>
-                          <Badge tone={item.severity}>{item.severity}</Badge>
-                          <Badge tone="outline">{item.effort} effort</Badge>
-                          <Badge tone="outline">{item.window}</Badge>
-                        </PlanMeta>
-                      </PlanItem>
-                    ))}
-                  </Plan>
-                </Section>
-              )}
-            </CardContent>
-          </Card>
-        </Stack>
-      )}
+      <Card style={{ marginTop: 14 }}>
+        <CardHeader>
+          <CardTitle>Sanitised findings</CardTitle>
+          <CardDescription>
+            {sorted.length} unique issue{sorted.length === 1 ? '' : 's'}, most severe first.
+            Hostnames, IP addresses and credentials are removed before storage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent style={{ paddingInline: 8 }}>
+          {sorted.length === 0 ? (
+            <p style={{ color: 'var(--aq-muted-fg)', fontSize: textSm, padding: '8px 12px' }}>
+              No findings were recorded for this scan.
+            </p>
+          ) : (
+            <TableScroll>
+              <Table style={{ minWidth: 820 }}>
+                <thead>
+                  <tr>
+                    <Th>Issue</Th>
+                    <Th>Severity</Th>
+                    <Th>CVSS</Th>
+                    <Th>Hosts</Th>
+                    <Th>CVEs</Th>
+                    <Th>Fix</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((finding) => (
+                    <FindingRow key={finding.id} finding={finding} />
+                  ))}
+                </tbody>
+              </Table>
+            </TableScroll>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -567,7 +558,7 @@ export function Loading() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))',
           gap: 14,
         }}
       >

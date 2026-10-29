@@ -17,12 +17,16 @@ const Badge = styled.div`
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: none;
   width: 40px;
   height: 40px;
   border-radius: ${radiusLg};
-  background: var(--aq-primary);
+  background-color: var(--aq-primary);
+  background-image: linear-gradient(145deg, var(--aq-highlight), transparent 60%);
   color: var(--aq-primary-fg);
-  box-shadow: var(--aq-shadow-md);
+  box-shadow:
+    var(--aq-shadow-md),
+    0 8px 22px -10px color-mix(in oklab, var(--aq-primary) 80%, transparent);
 `;
 
 const Tagline = styled.p`
@@ -36,7 +40,7 @@ export function Brand({ size = 22 }: { size?: number }) {
       <Badge>
         <ShieldCheck size={size} />
       </Badge>
-      Aegis
+      <span className="aq-brand-name">Aegis</span>
     </Mark>
   );
 }

@@ -87,11 +87,12 @@ const Panel = styled.section`
   flex-direction: column;
   padding: 24px 20px 32px;
   background: var(--aq-card);
-  border-left: 1px solid var(--aq-border);
 
   @media (min-width: 900px) {
     padding: 28px 40px;
     justify-content: center;
+    border-left: 1px solid var(--aq-border);
+    box-shadow: -24px 0 60px -40px oklch(0 0 0 / 0.35);
   }
 `;
 

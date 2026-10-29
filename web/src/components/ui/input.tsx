@@ -42,11 +42,6 @@ const Field = styled.input`
   &[aria-invalid='true'] {
     border-color: var(--aq-destructive);
   }
-
-  &[data-type='password'] {
-    font-family: ${textBase};
-    letter-spacing: 0.14em;
-  }
 `;
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>;

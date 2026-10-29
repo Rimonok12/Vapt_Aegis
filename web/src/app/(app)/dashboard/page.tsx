@@ -18,6 +18,7 @@ import {
   CardTitle,
   StatCard,
 } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { listReports, summarize } from '@/lib/data/reports';
 import { number } from '@/lib/format';
 import { riskBand } from '@/lib/types';
@@ -41,9 +42,8 @@ const Grid = styled.div`
 
 const TwoCol = styled.div`
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   gap: 14px;
-  margin-top: 14px;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;
@@ -52,7 +52,7 @@ const TwoCol = styled.div`
 
 const HeaderRow = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
@@ -77,12 +77,6 @@ const LinkAll = styled(Link)`
   }
 `;
 
-const reportGridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: 14,
-  marginTop: 14,
-} as const;
 
 const Delta = styled.span`
   display: inline-flex;
@@ -116,16 +110,17 @@ export default async function DashboardPage() {
         : 'bad';
 
   return (
-    <PageEnter style={{ display: 'grid', gap: 22 }}>
-      <HeaderRow>
-        <div>
-          <h2>Risk overview</h2>
-          <p style={{ color: 'var(--aq-muted-fg)', fontSize: '0.85rem', marginTop: 4 }}>
-            {session.organization?.name ?? 'Your workspace'} · {summary.readyReports} completed
-            report{summary.readyReports === 1 ? '' : 's'}
-          </p>
-        </div>
-      </HeaderRow>
+    <PageEnter style={{ display: 'grid', gap: 18 }}>
+      <PageHeader
+        eyebrow="Overview"
+        title="Risk overview"
+        description={`${session.organization?.name ?? 'Your workspace'} · ${summary.readyReports} completed report${summary.readyReports === 1 ? '' : 's'}`}
+        actions={
+          <LinkAll href="/reports">
+            All reports <ArrowRight size={13} />
+          </LinkAll>
+        }
+      />
 
       <Grid>
         <StatCard
@@ -209,7 +204,7 @@ export default async function DashboardPage() {
       </TwoCol>
 
       <div>
-        <HeaderRow style={{ marginBottom: 0, marginTop: 22 }}>
+        <HeaderRow style={{ marginBottom: 14, marginTop: 8 }}>
           <h2 style={{ fontSize: '1.1rem' }}>Recent reports</h2>
           <LinkAll href="/reports">
             View all <ArrowRight size={13} />
@@ -217,7 +212,7 @@ export default async function DashboardPage() {
         </HeaderRow>
 
         {recent.length === 0 ? (
-          <Card style={{ marginTop: 14, padding: 28, textAlign: 'center' }}>
+          <Card style={{ padding: 32, textAlign: 'center', alignItems: 'center' }}>
             <Badge tone="primary" style={{ marginBottom: 10 }}>
               No reports yet
             </Badge>
@@ -234,7 +229,7 @@ export default async function DashboardPage() {
             </p>
           </Card>
         ) : (
-          <MotionList style={reportGridStyle}>
+          <MotionList className="aq-cols-cards">
             {recent.map((report) => (
               <ReportCard key={report.id} report={report} />
             ))}

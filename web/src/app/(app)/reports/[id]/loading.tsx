@@ -8,7 +8,7 @@ export default function ReportDetailLoading() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))',
           gap: 14,
         }}
       >
@@ -16,7 +16,7 @@ export default function ReportDetailLoading() {
           <Skeleton key={index} style={{ height: 104, borderRadius: 14 }} />
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 14 }}>
+      <div className="aq-cols-main-side">
         <Skeleton style={{ height: 420, borderRadius: 14 }} />
         <Skeleton style={{ height: 420, borderRadius: 14 }} />
       </div>

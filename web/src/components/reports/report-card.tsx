@@ -18,8 +18,11 @@ const Tile = styled(Link)`
   color: var(--aq-card-fg);
   border: 1px solid var(--aq-border);
   border-radius: ${radiusLg};
-  box-shadow: var(--aq-shadow-sm);
+  box-shadow:
+    var(--aq-shadow-sm),
+    inset 0 1px 0 var(--aq-highlight);
   padding: 18px 20px;
+  min-width: 0;
   cursor: pointer;
   transition:
     border-color 180ms ${easeOut},
@@ -27,9 +30,11 @@ const Tile = styled(Link)`
     transform 180ms ${easeOut};
 
   &:hover {
-    border-color: var(--aq-border-strong);
-    box-shadow: var(--aq-shadow-md);
-    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--aq-primary) 35%, var(--aq-border-strong));
+    box-shadow:
+      var(--aq-shadow-lg),
+      inset 0 1px 0 var(--aq-highlight);
+    transform: translateY(-2px);
   }
 `;
 
@@ -45,6 +50,7 @@ const Title = styled.h3`
   font-weight: 620;
   letter-spacing: -0.02em;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 `;
 
 const Meta = styled.p`
@@ -56,7 +62,8 @@ const Meta = styled.p`
 const Metrics = styled.div`
   display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 8px 14px;
   margin-top: 12px;
 `;
 
@@ -98,7 +105,7 @@ export function ReportCard({ report }: { report: ReportRow }) {
   return (
     <Tile href={`/reports/${report.id}`}>
       <Head>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <Title>{report.title}</Title>
           <Meta>
             {SOURCE_LABEL[report.source] ?? report.source} · {relativeTime(report.created_at)}

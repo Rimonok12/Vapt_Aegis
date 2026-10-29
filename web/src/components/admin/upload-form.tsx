@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileUp, Loader2, UploadCloud, X } from 'lucide-react';
 import { styled } from '@yak/react';
@@ -16,24 +16,32 @@ const ACCEPT = '.nessus,.nmap,.xml,.json';
 const MAX_BYTES = 25 * 1024 * 1024;
 
 const Drop = styled.label`
+  position: relative;
   display: grid;
   gap: 8px;
-  place-content: center;
-  align-items: center;
+  justify-items: center;
   border: 1.5px dashed var(--aq-border-strong);
   border-radius: ${radiusMd};
-  padding: 30px 20px;
+  padding: 34px 20px;
   text-align: center;
   cursor: pointer;
   color: var(--aq-muted-fg);
+  background: color-mix(in oklab, var(--aq-muted) 45%, transparent);
   transition:
     border-color 160ms ease,
-    background-color 160ms ease;
+    background-color 160ms ease,
+    transform 160ms ease;
 
   &:hover,
-  &:focus-within {
+  &:focus-within,
+  &[data-dragging='true'] {
     border-color: var(--aq-primary);
     background: var(--aq-primary-soft);
+    color: var(--aq-fg);
+  }
+
+  &[data-dragging='true'] {
+    transform: scale(1.01);
   }
 
   & input {
@@ -43,6 +51,21 @@ const Drop = styled.label`
     opacity: 0;
     pointer-events: none;
   }
+`;
+
+const DropIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--aq-card);
+  color: var(--aq-primary);
+  box-shadow:
+    var(--aq-shadow-sm),
+    0 0 0 6px color-mix(in oklab, var(--aq-primary) 10%, transparent);
+  margin-bottom: 4px;
 `;
 
 const FileName = styled.div`
@@ -91,16 +114,38 @@ export function UploadForm() {
   const [title, setTitle] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  function pick(event: ChangeEvent<HTMLInputElement>) {
-    const picked = event.target.files?.[0] ?? null;
+  function accept(picked: File | null) {
     setError(null);
     if (picked && picked.size > MAX_BYTES) {
       setFile(null);
       setError('That file is larger than the 25 MB limit.');
       return;
     }
+    if (picked && !ACCEPT.split(',').some((ext) => picked.name.toLowerCase().endsWith(ext))) {
+      setFile(null);
+      setError('Unsupported file type. Upload a .nessus, .nmap, .xml or .json export.');
+      return;
+    }
     setFile(picked);
+  }
+
+  function pick(event: ChangeEvent<HTMLInputElement>) {
+    accept(event.target.files?.[0] ?? null);
+  }
+
+  function onDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setDragging(false);
+    accept(event.dataTransfer.files?.[0] ?? null);
+  }
+
+  function clearFile() {
+    setFile(null);
+    // Reset the native input so picking the same file again still fires onChange.
+    if (inputRef.current) inputRef.current.value = '';
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -127,7 +172,7 @@ export function UploadForm() {
       }
 
       setTitle('');
-      setFile(null);
+      clearFile();
       setBusy(false);
       router.push(json.redirect ?? '/reports');
       router.refresh();
@@ -138,7 +183,7 @@ export function UploadForm() {
   }
 
   return (
-    <Card style={{ maxWidth: 620 }}>
+    <Card style={{ maxWidth: 680 }}>
       <CardHeader>
         <CardTitle>Upload a scan export</CardTitle>
         <CardDescription>
@@ -149,13 +194,29 @@ export function UploadForm() {
       <CardContent>
         <form onSubmit={submit} style={{ display: 'grid', gap: 14 }}>
           <div>
-            <Drop>
-              <UploadCloud size={22} />
-              <span style={{ fontSize: textSm, fontWeight: 550 }}>
-                {file ? 'Choose a different file' : 'Browse for a scan file'}
+            <Drop
+              data-dragging={dragging}
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={onDrop}
+            >
+              <DropIcon>
+                <UploadCloud size={20} />
+              </DropIcon>
+              <span style={{ fontSize: textSm, fontWeight: 600, color: 'var(--aq-fg)' }}>
+                {file ? 'Choose a different file' : 'Drop a scan file here, or browse'}
               </span>
               <Hint>{ACCEPT.split(',').join(' · ')} — up to 25 MB</Hint>
-              <input type="file" accept={ACCEPT} onChange={pick} required={!file} />
+              <input
+                ref={inputRef}
+                type="file"
+                accept={ACCEPT}
+                onChange={pick}
+                required={!file}
+              />
             </Drop>
             {file && (
               <FileName>
@@ -164,7 +225,7 @@ export function UploadForm() {
                 <em style={{ color: 'var(--aq-muted-fg)', fontStyle: 'normal', fontSize: textXs }}>
                   {formatBytes(file.size)}
                 </em>
-                <Remove type="button" onClick={() => setFile(null)} aria-label="Remove file">
+                <Remove type="button" onClick={clearFile} aria-label="Remove file">
                   <X size={14} />
                 </Remove>
               </FileName>

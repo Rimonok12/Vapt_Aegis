@@ -76,7 +76,10 @@ export async function proxy(request: NextRequest) {
     // API callers parse JSON; an HTML sign-in redirect would surface as a
     // confusing "network error" in the client forms.
     if (pathname.startsWith('/api/')) {
-      return NextResponse.json({ message: 'Your session has expired. Please sign in again.' }, { status: 401 });
+      return NextResponse.json(
+        { message: 'Your session has expired. Please sign in again.' },
+        { status: 401 }
+      );
     }
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/signin';

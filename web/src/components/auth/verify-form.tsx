@@ -93,7 +93,7 @@ export function VerifyForm({ email }: { email: string | null }) {
             <Button type="submit" disabled={pending} size="lg" style={{ width: '100%' }}>
               {pending ? (
                 <>
-                  <Loader2 size={16} /> Verifying…
+                  <Loader2 size={16} className="aq-spin" /> Verifying…
                 </>
               ) : (
                 <>

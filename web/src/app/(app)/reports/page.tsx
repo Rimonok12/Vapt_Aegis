@@ -4,38 +4,11 @@ import { styled } from '@yak/react';
 import { MotionList } from '@/components/motion/motion-list';
 import { PageEnter } from '@/components/motion/page-enter';
 import { ReportCard } from '@/components/reports/report-card';
+import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { listReports } from '@/lib/data/reports';
 
 export const metadata: Metadata = { title: 'Reports' };
-
-const Head = styled.div`
-  margin-bottom: 18px;
-
-  & h2 {
-    font-size: 1.35rem;
-    font-weight: 680;
-    letter-spacing: -0.03em;
-  }
-
-  & p {
-    color: var(--aq-muted-fg);
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
-`;
-
-const gridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: 14,
-} as const;
 
 const Empty = styled.div`
   border: 1px dashed var(--aq-border-strong);
@@ -61,7 +34,7 @@ async function ReportsContent() {
   }
 
   return (
-    <MotionList style={gridStyle}>
+    <MotionList className="aq-cols-cards">
       {reports.map((report) => (
         <ReportCard key={report.id} report={report} />
       ))}
@@ -72,10 +45,11 @@ async function ReportsContent() {
 export default function ReportsPage() {
   return (
     <PageEnter>
-      <Head>
-        <h2>All reports</h2>
-        <p>Every scan uploaded to your organisation, newest first.</p>
-      </Head>
+      <PageHeader
+        eyebrow="Library"
+        title="All reports"
+        description="Every scan uploaded to your organisation, newest first."
+      />
       <ReportsContent />
     </PageEnter>
   );
@@ -83,10 +57,10 @@ export default function ReportsPage() {
 
 export function ReportsLoading() {
   return (
-    <Grid>
+    <div className="aq-cols-cards">
       {Array.from({ length: 6 }).map((_, index) => (
         <Skeleton key={index} style={{ height: 168, borderRadius: 14 }} />
       ))}
-    </Grid>
+    </div>
   );
 }

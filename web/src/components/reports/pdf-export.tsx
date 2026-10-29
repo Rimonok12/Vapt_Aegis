@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Download, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import type { ReportRow } from '@/lib/types';
@@ -30,8 +31,10 @@ export function PdfExport({ report }: { report: ReportRow }) {
       anchor.click();
       anchor.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4_000);
+      toast.success('PDF downloaded.');
     } catch (error) {
       console.error('PDF export failed', error);
+      toast.error('Could not build the PDF. Please try again.');
     } finally {
       setBusy(false);
     }

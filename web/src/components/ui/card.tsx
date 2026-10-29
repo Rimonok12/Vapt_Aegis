@@ -9,10 +9,13 @@ const Root = styled.div`
   color: var(--aq-card-fg);
   border: 1px solid var(--aq-border);
   border-radius: ${radiusLg};
-  box-shadow: var(--aq-shadow-sm);
+  box-shadow:
+    var(--aq-shadow-sm),
+    inset 0 1px 0 var(--aq-highlight);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 
   &[data-interactive='true'] {
     transition:
@@ -22,7 +25,9 @@ const Root = styled.div`
   }
 
   &[data-interactive='true']:hover {
-    box-shadow: var(--aq-shadow-md);
+    box-shadow:
+      var(--aq-shadow-md),
+      inset 0 1px 0 var(--aq-highlight);
     border-color: var(--aq-border-strong);
   }
 `;
@@ -37,8 +42,8 @@ const Header = styled.div`
 
 const Title = styled.h3`
   font-size: ${textLg};
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 640;
+  letter-spacing: -0.022em;
 `;
 
 const Description = styled.p`
@@ -90,17 +95,54 @@ export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return <Footer className={cn(className)} {...props} />;
 }
 
-/** Compact stat block used across dashboard KPI tiles. */
+/**
+ * Compact stat block used across dashboard KPI tiles. The tone drives a thin
+ * accent bar, a soft corner glow and the icon chip colour.
+ */
 const Stat = styled(Root)`
+  --aq-stat-accent: var(--aq-primary);
+  position: relative;
   padding: 18px 20px;
-  gap: 2px;
+  gap: 4px;
+  background:
+    radial-gradient(
+      120% 90% at 100% 0%,
+      color-mix(in oklab, var(--aq-stat-accent) 9%, transparent),
+      transparent 60%
+    ),
+    var(--aq-card);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--aq-stat-accent),
+      color-mix(in oklab, var(--aq-stat-accent) 10%, transparent)
+    );
+    opacity: 0.85;
+  }
 
   &[data-tone='critical'] {
-    border-color: color-mix(in oklab, var(--aq-sev-critical) 45%, transparent);
+    --aq-stat-accent: var(--aq-sev-critical);
+  }
+
+  &[data-tone='high'] {
+    --aq-stat-accent: var(--aq-sev-high);
+  }
+
+  &[data-tone='medium'] {
+    --aq-stat-accent: var(--aq-sev-medium);
+  }
+
+  &[data-tone='low'] {
+    --aq-stat-accent: var(--aq-sev-low);
   }
 
   &[data-tone='success'] {
-    border-color: color-mix(in oklab, var(--aq-success) 40%, transparent);
+    --aq-stat-accent: var(--aq-success);
   }
 `;
 
@@ -111,8 +153,9 @@ const StatIcon = styled.span`
   width: 30px;
   height: 30px;
   border-radius: ${radiusSm};
-  background: var(--aq-muted);
-  color: var(--aq-muted-fg);
+  background: color-mix(in oklab, var(--aq-stat-accent) 14%, transparent);
+  color: var(--aq-stat-accent);
+  flex: none;
 `;
 
 const StatTop = styled.div`
@@ -129,9 +172,9 @@ const StatLabel = styled.span`
 `;
 
 const StatValue = styled.div`
-  font-size: 1.75rem;
-  font-weight: 650;
-  letter-spacing: -0.03em;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   line-height: 1.25;
 `;

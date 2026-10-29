@@ -7,6 +7,23 @@ import type { ScanSource } from '@/lib/types';
 
 const MAX_BYTES = 25 * 1024 * 1024;
 
+// Leaves room to wake a sleeping backend (Render free instances cold-start in
+// ~30-60 s) before handing over the file.
+export const maxDuration = 120;
+
+/** Ping the backend until it answers, so a cold start doesn't eat the upload. */
+async function wakeBackend(backendUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${backendUrl}/healthz`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(75_000),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function detectSource(filename: string): ScanSource | null {
   const lower = filename.toLowerCase();
   if (lower.endsWith('.nessus')) return 'nessus';
@@ -91,6 +108,12 @@ export async function POST(request: NextRequest) {
 
   // Hand off to the parser service.
   const { backendUrl, backendToken } = env();
+  if (!(await wakeBackend(backendUrl))) {
+    const message = 'The parser service is unreachable. Please try again in a minute.';
+    await admin.from('reports').update({ status: 'failed', error: message }).eq('id', row.id);
+    return NextResponse.json({ message, reportId: row.id }, { status: 502 });
+  }
+
   const payload = new FormData();
   payload.append('file', file);
   payload.append('report_id', row.id);

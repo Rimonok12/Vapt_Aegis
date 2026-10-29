@@ -54,12 +54,14 @@ const Headline = styled.h1`
   font-weight: 720;
   max-width: 22ch;
 
-  /* Gradient text. Once SplitText wraps the words in transformed inline-blocks,
-     background-clip: text on the outer span no longer clips to their glyphs and
-     paints solid blocks instead — so each split word carries the gradient. */
+  /* Gradient text. Keep to background-image with sRGB colours: an oklch() stop
+     makes the CSS compiler emit a later @supports rule using the background
+     shorthand, which resets background-clip to border-box (solid blocks).
+     SplitText wraps words in transformed inline-blocks, so each word carries
+     its own gradient once split. */
   & .aq-gradient:not(:has(.aq-word)),
   & .aq-gradient .aq-word {
-    background: linear-gradient(100deg, var(--aq-primary), oklch(0.7 0.15 200));
+    background-image: linear-gradient(100deg, var(--aq-primary), #00b2c4);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -133,46 +135,48 @@ export function LandingHero() {
     if (!root) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const split = headlineRef.current
-      ? SplitText.create(headlineRef.current, { type: 'words', wordsClass: 'aq-word' })
-      : null;
+    // gsap.context() records every tween, SplitText and ScrollTrigger so a
+    // single revert() restores the original DOM and inline styles. Killing the
+    // timeline instead leaves `.from()` targets frozen at opacity 0, which hides
+    // the hero on React Strict Mode's mount → unmount → mount in development.
+    const ctx = gsap.context(() => {
+      const split = headlineRef.current
+        ? SplitText.create(headlineRef.current, { type: 'words', wordsClass: 'aq-word' })
+        : null;
 
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.from(pillRef.current, { y: -16, opacity: 0, duration: 0.55 })
-      .from(
-        split?.words ?? [],
-        { yPercent: 115, opacity: 0, duration: 0.85, stagger: 0.05, ease: 'power4.out' },
-        '-=0.2'
-      )
-      .from(subRef.current, { y: 18, opacity: 0, duration: 0.7 }, '-=0.5')
-      .from(
-        actionsRef.current?.children ?? [],
-        { y: 14, opacity: 0, duration: 0.55, stagger: 0.09 },
-        '-=0.45'
-      )
-      .from(
-        statsRef.current?.children ?? [],
-        { y: 12, opacity: 0, duration: 0.5, stagger: 0.08 },
-        '-=0.35'
-      );
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.from(pillRef.current, { y: -16, opacity: 0, duration: 0.55 })
+        .from(
+          split?.words ?? [],
+          { yPercent: 115, opacity: 0, duration: 0.85, stagger: 0.05, ease: 'power4.out' },
+          '-=0.2'
+        )
+        .from(subRef.current, { y: 18, opacity: 0, duration: 0.7 }, '-=0.5')
+        .from(
+          actionsRef.current?.children ?? [],
+          { y: 14, opacity: 0, duration: 0.55, stagger: 0.09 },
+          '-=0.45'
+        )
+        .from(
+          statsRef.current?.children ?? [],
+          { y: 12, opacity: 0, duration: 0.5, stagger: 0.08 },
+          '-=0.35'
+        );
 
-    const parallax = ScrollTrigger.create({
-      trigger: root,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-      onUpdate: (self) => {
-        if (gridRef.current) {
-          gsap.set(gridRef.current, { y: self.progress * 90, opacity: 1 - self.progress * 0.6 });
-        }
-      },
-    });
+      ScrollTrigger.create({
+        trigger: root,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+        onUpdate: (self) => {
+          if (gridRef.current) {
+            gsap.set(gridRef.current, { y: self.progress * 90, opacity: 1 - self.progress * 0.6 });
+          }
+        },
+      });
+    }, root);
 
-    return () => {
-      tl.kill();
-      parallax.kill();
-      split?.revert();
-    };
+    return () => ctx.revert();
   }, []);
 
   return (

@@ -4,13 +4,22 @@ import { styled } from '@yak/react';
 import { AppShell } from '@/components/app-shell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { requireVerifiedUser } from '@/lib/auth/session';
-import { sidebarWidth } from '@/styles/tokens';
+import { sidebarWidth, sidebarWidthCollapsed } from '@/styles/tokens';
 
+// Mirrors AppShell's Frame breakpoints so the skeleton lines up on every size.
 const Frame = styled.div`
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   margin-left: ${sidebarWidth};
+
+  @media (min-width: 721px) and (max-width: 1024px) {
+    margin-left: ${sidebarWidthCollapsed};
+  }
+
+  @media (max-width: 720px) {
+    margin-left: 0;
+  }
 `;
 
 function ShellFallback() {

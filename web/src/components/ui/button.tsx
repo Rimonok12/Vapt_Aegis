@@ -62,14 +62,19 @@ const buttonCss = css`
   }
 
   &[data-variant='primary'] {
-    background: var(--aq-primary);
+    background-color: var(--aq-primary);
+    background-image: linear-gradient(180deg, var(--aq-highlight), transparent 55%);
     color: var(--aq-primary-fg);
-    box-shadow: var(--aq-shadow-sm);
+    box-shadow:
+      var(--aq-shadow-sm),
+      0 6px 18px -8px color-mix(in oklab, var(--aq-primary) 70%, transparent);
   }
 
   &[data-variant='primary']:not(:disabled):hover {
-    background: var(--aq-primary-hover);
-    box-shadow: var(--aq-shadow-md);
+    background-color: var(--aq-primary-hover);
+    box-shadow:
+      var(--aq-shadow-md),
+      0 10px 26px -10px color-mix(in oklab, var(--aq-primary) 80%, transparent);
   }
 
   &[data-variant='secondary'] {

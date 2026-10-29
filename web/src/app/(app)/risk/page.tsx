@@ -7,37 +7,24 @@ import { CountUp } from '@/components/motion/count-up';
 import { PageEnter } from '@/components/motion/page-enter';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { Table, TableScroll, Td, Th } from '@/components/ui/table';
 import { requireVerifiedUser } from '@/lib/auth/session';
 import { listReports, summarize } from '@/lib/data/reports';
 import { formatDate, number } from '@/lib/format';
 import { riskBand, totalFindings } from '@/lib/types';
-import { radiusMd, textSm, textXs } from '@/styles/tokens';
+import { radiusMd, textSm } from '@/styles/tokens';
 
 export const metadata: Metadata = { title: 'Risk posture' };
 
-const Head = styled.div`
-  margin-bottom: 18px;
-
-  & h2 {
-    font-size: 1.35rem;
-    font-weight: 680;
-    letter-spacing: -0.03em;
-  }
-
-  & p {
-    color: var(--aq-muted-fg);
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-`;
-
 const Cols = styled.div`
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 14px;
+  align-items: start;
 
   @media (max-width: 1020px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
@@ -56,6 +43,9 @@ const Band = styled.div`
   border: 1px solid var(--aq-border);
   border-radius: ${radiusMd};
   background: var(--aq-card);
+  box-shadow:
+    var(--aq-shadow-sm),
+    inset 0 1px 0 var(--aq-highlight);
 `;
 
 const BandLabel = styled.div`
@@ -69,30 +59,6 @@ const BandValue = styled.div`
   letter-spacing: -0.02em;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: ${textSm};
-`;
-
-const Th = styled.th`
-  text-align: left;
-  font-size: ${textXs};
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--aq-muted-fg);
-  padding: 0 12px 10px;
-  border-bottom: 1px solid var(--aq-border);
-  white-space: nowrap;
-`;
-
-const Td = styled.td`
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--aq-border);
-  font-variant-numeric: tabular-nums;
-`;
-
 export default async function RiskPage() {
   await requireVerifiedUser();
   const reports = await listReports();
@@ -102,10 +68,11 @@ export default async function RiskPage() {
 
   return (
     <PageEnter>
-      <Head>
-        <h2>Risk posture</h2>
-        <p>Portfolio-wide exposure across every completed scan in your organisation.</p>
-      </Head>
+      <PageHeader
+        eyebrow="Analytics"
+        title="Risk posture"
+        description="Portfolio-wide exposure across every completed scan in your organisation."
+      />
 
       <Cols>
         <Stack>
@@ -130,13 +97,14 @@ export default async function RiskPage() {
                   No completed scans yet.
                 </p>
               ) : (
+                <TableScroll>
                 <Table>
                   <thead>
                     <tr>
                       <Th>Report</Th>
                       <Th>Scanned</Th>
                       <Th>Score</Th>
-                      <Th>Finding</Th>
+                      <Th>Findings</Th>
                       <Th>Band</Th>
                     </tr>
                   </thead>
@@ -145,7 +113,7 @@ export default async function RiskPage() {
                       const rBand = riskBand(report.risk_score);
                       return (
                         <tr key={report.id}>
-                          <Td style={{ fontWeight: 540, fontVariantNumeric: 'normal' }}>
+                          <Td style={{ fontWeight: 540, minWidth: 200 }}>
                             {report.title}
                           </Td>
                           <Td style={{ color: 'var(--aq-muted-fg)' }}>
@@ -163,6 +131,7 @@ export default async function RiskPage() {
                     })}
                   </tbody>
                 </Table>
+                </TableScroll>
               )}
             </CardContent>
           </Card>

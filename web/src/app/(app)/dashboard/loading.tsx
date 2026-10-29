@@ -10,7 +10,7 @@ export default function DashboardLoading() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))',
           gap: 14,
         }}
       >
@@ -18,17 +18,11 @@ export default function DashboardLoading() {
           <Skeleton key={index} style={{ height: 108, borderRadius: 14 }} />
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 14 }}>
+      <div className="aq-cols-main-side">
         <Skeleton style={{ height: 300, borderRadius: 14 }} />
         <Skeleton style={{ height: 300, borderRadius: 14 }} />
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: 14,
-        }}
-      >
+      <div className="aq-cols-cards">
         {Array.from({ length: 3 }).map((_, index) => (
           <Skeleton key={index} style={{ height: 168, borderRadius: 14 }} />
         ))}

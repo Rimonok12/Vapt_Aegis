@@ -72,7 +72,7 @@ export function ResetPasswordForm() {
         <Button type="submit" disabled={pending} size="lg" style={{ width: '100%', marginTop: 4 }}>
           {pending ? (
             <>
-              <Loader2 size={16} /> Updating…
+              <Loader2 size={16} className="aq-spin" /> Updating…
             </>
           ) : (
             'Set new password'

@@ -94,7 +94,7 @@ export function SignInForm({ next = '/dashboard' }: { next?: string }) {
         <Button type="submit" disabled={pending} size="lg" style={{ width: '100%', marginTop: 4 }}>
           {pending ? (
             <>
-              <Loader2 size={16} /> Signing in…
+              <Loader2 size={16} className="aq-spin" /> Signing in…
             </>
           ) : (
             'Sign in'
@@ -133,7 +133,7 @@ export function SignInForm({ next = '/dashboard' }: { next?: string }) {
                 style={{ flex: 1 }}
               />
               <Button type="submit" formAction={resendAction} disabled={resendPending}>
-                {resendPending ? <Loader2 size={15} /> : 'Resend'}
+                {resendPending ? <Loader2 size={15} className="aq-spin" /> : 'Resend'}
               </Button>
             </div>
             {resendState.message ? (

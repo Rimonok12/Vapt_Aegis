@@ -84,7 +84,7 @@ export function SignUpForm() {
         <Button type="submit" disabled={pending} size="lg" style={{ width: '100%', marginTop: 4 }}>
           {pending ? (
             <>
-              <Loader2 size={16} /> Creating account…
+              <Loader2 size={16} className="aq-spin" /> Creating account…
             </>
           ) : (
             'Create account'

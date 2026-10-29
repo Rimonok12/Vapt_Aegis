@@ -1,0 +1,30 @@
+# Render Blueprint — deploys the FastAPI ingest backend.
+# Render dashboard → New → Blueprint → pick this repo. Secrets marked
+# `sync: false` are prompted for on first deploy and never stored in git.
+services:
+  - type: web
+    name: aegis-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      # Must equal BACKEND_INTERNAL_TOKEN on Vercel.
+      - key: INTERNAL_TOKEN
+        sync: false
+      # Optional: point at a reachable Ollama server for LLM-written reports.
+      # Without it the backend writes a deterministic executive summary.
+      - key: OLLAMA_URL
+        value: http://127.0.0.1:11434
+      - key: OLLAMA_MODEL
+        value: llama3.2:3b
+      - key: OLLAMA_TIMEOUT_SECONDS
+        value: "120"

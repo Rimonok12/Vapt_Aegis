@@ -5,27 +5,12 @@ import { MembersTable } from '@/components/admin/members-table';
 import { PageEnter } from '@/components/motion/page-enter';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
 import { requireAdmin } from '@/lib/auth/session';
 import { listMembers, listOrganizationStats } from '@/lib/data/members';
 import { number } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Tenants' };
-
-const Head = styled.div`
-  margin-bottom: 18px;
-
-  & h2 {
-    font-size: 1.35rem;
-    font-weight: 680;
-    letter-spacing: -0.03em;
-  }
-
-  & p {
-    color: var(--aq-muted-fg);
-    font-size: 0.85rem;
-    margin-top: 4px;
-  }
-`;
 
 const Stats = styled.div`
   display: flex;
@@ -80,10 +65,11 @@ export default async function TenantsPage() {
 
   return (
     <PageEnter>
-      <Head>
-        <h2>Tenants &amp; members</h2>
-        <p>Your dedicated organisation and the people who can access it.</p>
-      </Head>
+      <PageHeader
+        eyebrow="Administration"
+        title="Tenants & members"
+        description="Your dedicated organisation and the people who can access it."
+      />
 
       {!organizationId ? (
         <Card

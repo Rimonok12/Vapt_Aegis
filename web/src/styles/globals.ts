@@ -58,6 +58,11 @@ globalStyle`
     --aq-shadow-sm: 0 1px 2px oklch(0.2 0.02 255 / 0.06);
     --aq-shadow-md: 0 4px 18px -6px oklch(0.2 0.02 255 / 0.16);
     --aq-shadow-lg: 0 18px 48px -20px oklch(0.2 0.02 255 / 0.28);
+    --aq-shadow-xl: 0 32px 80px -32px oklch(0.25 0.06 258 / 0.35);
+
+    /* 1px top highlight that gives cards and buttons a lit, layered edge. */
+    --aq-highlight: oklch(1 0 0 / 0.75);
+    --aq-glow: oklch(0.5 0.19 258 / 0.1);
 
     --aq-grid: oklch(0.92 0.006 255);
   }
@@ -95,6 +100,10 @@ globalStyle`
     --aq-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
     --aq-shadow-md: 0 6px 22px -8px oklch(0 0 0 / 0.55);
     --aq-shadow-lg: 0 22px 60px -24px oklch(0 0 0 / 0.7);
+    --aq-shadow-xl: 0 36px 90px -30px oklch(0 0 0 / 0.8);
+
+    --aq-highlight: oklch(1 0 0 / 0.06);
+    --aq-glow: oklch(0.68 0.16 254 / 0.12);
 
     --aq-grid: oklch(0.27 0.02 258);
   }
@@ -135,6 +144,15 @@ globalStyle`
     text-rendering: optimizeLegibility;
     min-height: 100dvh;
     overflow-x: hidden;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  /* Soft brand glow behind the signed-in app, fixed so it doesn't scroll away. */
+  .aq-app-bg {
+    background:
+      radial-gradient(1200px 520px at 70% -180px, var(--aq-glow), transparent 70%),
+      var(--aq-bg);
+    background-attachment: fixed;
   }
 
   a {
@@ -296,6 +314,25 @@ globalStyle`
     from {
       opacity: 0;
       transform: translateY(10px);
+    }
+  }
+
+  /* Responsive skeleton/grid helpers (never wider than the viewport). */
+  .aq-cols-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: 14px;
+  }
+
+  .aq-cols-main-side {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 14px;
+  }
+
+  @media (max-width: 1080px) {
+    .aq-cols-main-side {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 

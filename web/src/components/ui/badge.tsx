@@ -18,6 +18,16 @@ const Root = styled.span`
   white-space: nowrap;
   width: fit-content;
 
+  /* Severity values arrive lowercase ("critical"); present them as labels.
+     (::first-letter does not apply to inline-flex boxes.) */
+  &[data-tone='critical'],
+  &[data-tone='high'],
+  &[data-tone='medium'],
+  &[data-tone='low'],
+  &[data-tone='info'] {
+    text-transform: capitalize;
+  }
+
   &[data-tone='neutral'] {
     background: var(--aq-muted);
     color: var(--aq-muted-fg);

@@ -5,7 +5,7 @@ export default function TenantsLoading() {
     <div>
       <Skeleton style={{ height: 26, width: 220, marginBottom: 8 }} />
       <Skeleton style={{ height: 14, width: 300, marginBottom: 18 }} />
-      <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
         <Skeleton style={{ height: 24, width: 90 }} />
         <Skeleton style={{ height: 24, width: 110 }} />
         <Skeleton style={{ height: 24, width: 90 }} />

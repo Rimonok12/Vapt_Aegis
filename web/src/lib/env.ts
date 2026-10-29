@@ -14,6 +14,7 @@ type Env = {
   backendToken: string;
   porichoyUrl: string;
   porichoyKey: string;
+  porichoyMock: boolean;
   appUrl: string;
   bootstrapAdminEmail: string;
   nodeEnv: string;
@@ -51,6 +52,9 @@ export function env(): Env {
       'https://porichoy-backend.porichoy.dev/api/v1'
     ),
     porichoyKey: optional('PORICHOY_API_KEY', process.env.PORICHOY_API_KEY, ''),
+    porichoyMock: ['1', 'true', 'yes'].includes(
+      (process.env.PORICHOY_MOCK ?? '').trim().toLowerCase()
+    ),
     appUrl: optional(
       'NEXT_PUBLIC_APP_URL',
       process.env.NEXT_PUBLIC_APP_URL,

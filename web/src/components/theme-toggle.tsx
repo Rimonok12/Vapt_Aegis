@@ -65,7 +65,14 @@ const Option = styled.button`
   }
 `;
 
-export function ThemeToggle() {
+const NEXT_MODE: Record<Mode, Mode> = { light: 'dark', dark: 'system', system: 'light' };
+const MODE_LABEL: Record<Mode, string> = { light: 'Light', dark: 'Dark', system: 'System' };
+
+/**
+ * Light / dark / system switch. `compact` renders a single button that cycles
+ * through the modes, for places too narrow for the segmented control.
+ */
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const mode = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
@@ -79,6 +86,22 @@ export function ThemeToggle() {
   function select(next: Mode) {
     localStorage.setItem(STORE_KEY, next);
     window.dispatchEvent(new Event(THEME_EVENT));
+  }
+
+  if (compact) {
+    const Icon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor;
+    return (
+      <Option
+        type="button"
+        data-active="true"
+        onClick={() => select(NEXT_MODE[mode])}
+        aria-label={`Theme: ${MODE_LABEL[mode]}. Switch to ${MODE_LABEL[NEXT_MODE[mode]]}`}
+        title={`Theme: ${MODE_LABEL[mode]}`}
+        style={{ width: 34, height: 32 }}
+      >
+        <Icon size={15} />
+      </Option>
+    );
   }
 
   return (
