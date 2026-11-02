@@ -37,8 +37,10 @@ const Group = styled.div`
   gap: 2px;
   padding: 3px;
   border-radius: ${radiusMd};
-  border: 1px solid var(--aq-border);
-  background: var(--aq-muted);
+  border: 1px solid var(--aq-glass-border);
+  background-color: var(--aq-glass);
+  backdrop-filter: blur(10px) saturate(1.4);
+  box-shadow: inset 0 1px 0 var(--aq-glass-shine);
 `;
 
 const Option = styled.button`

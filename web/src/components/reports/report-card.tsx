@@ -14,7 +14,8 @@ const SOURCE_LABEL: Record<string, string> = {
 
 const Tile = styled(Link)`
   display: block;
-  background: var(--aq-card);
+  background-color: var(--aq-glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
   color: var(--aq-card-fg);
   border: 1px solid var(--aq-border);
   border-radius: ${radiusLg};

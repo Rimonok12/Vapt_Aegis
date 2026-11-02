@@ -83,10 +83,14 @@ const Point = styled.li`
 `;
 
 const Panel = styled.section`
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: 24px 20px 32px;
-  background: var(--aq-card);
+  background-color: var(--aq-bg);
+  background-image:
+    radial-gradient(60% 45% at 85% 15%, color-mix(in oklab, var(--aq-grad-to) 22%, transparent), transparent 70%),
+    radial-gradient(55% 40% at 15% 90%, color-mix(in oklab, var(--aq-grad-from) 18%, transparent), transparent 70%);
 
   @media (min-width: 900px) {
     padding: 28px 40px;
@@ -105,8 +109,22 @@ const TopBar = styled.div`
 
 const Centered = styled.div`
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   margin-inline: auto;
+  padding: 32px 30px;
+  border-radius: 20px;
+  border: 1px solid var(--aq-glass-border);
+  background-color: var(--aq-glass);
+  backdrop-filter: blur(20px) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 var(--aq-glass-shine),
+    0 1px 2px oklch(0.2 0.05 260 / 0.05),
+    0 24px 60px -24px oklch(0.3 0.12 258 / 0.35);
+
+  @media (max-width: 480px) {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
 `;
 
 const Bottom = styled.div`

@@ -9,13 +9,16 @@ export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'des
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 const buttonCss = css`
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border-radius: ${radiusMd};
   font-size: ${textSm};
-  font-weight: 550;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1;
   white-space: nowrap;
@@ -26,11 +29,12 @@ const buttonCss = css`
     background-color ${durationBase} ${easeOut},
     color ${durationBase} ${easeOut},
     border-color ${durationBase} ${easeOut},
-    box-shadow ${durationBase} ${easeOut},
-    transform ${durationBase} ${easeOut};
+    box-shadow 260ms ${easeOut},
+    transform 260ms ${easeOut},
+    filter ${durationBase} ${easeOut};
 
   &:not(:disabled):active {
-    transform: translateY(1px);
+    transform: translateY(0) scale(0.985);
   }
 
   &:disabled {
@@ -39,19 +43,19 @@ const buttonCss = css`
   }
 
   &[data-size='sm'] {
-    height: 32px;
-    padding-inline: 12px;
+    height: 34px;
+    padding-inline: 14px;
     font-size: 0.78rem;
   }
 
   &[data-size='md'] {
-    height: 38px;
-    padding-inline: 16px;
+    height: 40px;
+    padding-inline: 18px;
   }
 
   &[data-size='lg'] {
-    height: 46px;
-    padding-inline: 22px;
+    height: 48px;
+    padding-inline: 24px;
     font-size: 0.95rem;
   }
 
@@ -61,59 +65,110 @@ const buttonCss = css`
     padding: 0;
   }
 
+  /* Glass-finish blue gradient: soft top sheen + inner edge light + glow.
+     Longhands only — a background shorthand would reset background-clip. */
   &[data-variant='primary'] {
-    background-color: var(--aq-primary);
-    background-image: linear-gradient(180deg, var(--aq-highlight), transparent 55%);
-    color: var(--aq-primary-fg);
+    color: var(--aq-grad-fg);
+    background-color: var(--aq-grad-from);
+    background-image:
+      linear-gradient(180deg, oklch(1 0 0 / 0.16), oklch(1 0 0 / 0) 48%),
+      linear-gradient(135deg, var(--aq-grad-from), var(--aq-grad-to));
+    border-color: color-mix(in oklab, var(--aq-grad-from) 70%, oklch(0.2 0.05 260));
     box-shadow:
-      var(--aq-shadow-sm),
-      0 6px 18px -8px color-mix(in oklab, var(--aq-primary) 70%, transparent);
+      inset 0 1px 0 oklch(1 0 0 / 0.32),
+      inset 0 -1px 0 oklch(0 0 0 / 0.12),
+      0 1px 2px oklch(0.2 0.05 260 / 0.2),
+      0 8px 22px -10px var(--aq-grad-glow);
+    text-shadow: 0 1px 0 oklch(0 0 0 / 0.12);
+  }
+
+  /* Light sweep across the glass on hover. */
+  &[data-variant='primary']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(
+      115deg,
+      transparent 30%,
+      oklch(1 0 0 / 0.28) 48%,
+      transparent 66%
+    );
+    transform: translateX(-120%);
+    transition: transform 700ms ${easeOut};
+    pointer-events: none;
   }
 
   &[data-variant='primary']:not(:disabled):hover {
-    background-color: var(--aq-primary-hover);
+    transform: translateY(-1px);
+    filter: brightness(1.06) saturate(1.05);
     box-shadow:
-      var(--aq-shadow-md),
-      0 10px 26px -10px color-mix(in oklab, var(--aq-primary) 80%, transparent);
+      inset 0 1px 0 oklch(1 0 0 / 0.38),
+      inset 0 -1px 0 oklch(0 0 0 / 0.12),
+      0 2px 4px oklch(0.2 0.05 260 / 0.18),
+      0 14px 30px -10px var(--aq-grad-glow);
+  }
+
+  &[data-variant='primary']:not(:disabled):hover::after {
+    transform: translateX(120%);
   }
 
   &[data-variant='secondary'] {
-    background: var(--aq-muted);
+    background-color: var(--aq-glass);
     color: var(--aq-fg);
+    border-color: var(--aq-glass-border);
+    backdrop-filter: blur(10px) saturate(1.4);
   }
 
   &[data-variant='secondary']:not(:disabled):hover {
-    background: color-mix(in oklab, var(--aq-muted) 75%, var(--aq-fg));
+    background-color: var(--aq-glass-strong);
   }
 
+  /* Frosted glass with a faint blue edge. */
   &[data-variant='outline'] {
-    background: var(--aq-card);
+    background-color: var(--aq-glass);
+    background-image: linear-gradient(180deg, var(--aq-glass-shine), transparent 70%);
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
     color: var(--aq-fg);
-    border-color: var(--aq-border-strong);
+    border-color: color-mix(in oklab, var(--aq-primary) 22%, var(--aq-border-strong));
+    backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow:
+      0 1px 2px oklch(0.2 0.05 260 / 0.06),
+      0 6px 18px -12px oklch(0.3 0.12 258 / 0.3);
   }
 
   &[data-variant='outline']:not(:disabled):hover {
-    background: var(--aq-accent);
-    border-color: var(--aq-ring);
+    background-color: var(--aq-glass-strong);
+    border-color: color-mix(in oklab, var(--aq-primary) 55%, transparent);
+    color: var(--aq-primary);
+    transform: translateY(-1px);
+    box-shadow:
+      0 2px 4px oklch(0.2 0.05 260 / 0.06),
+      0 10px 24px -12px var(--aq-grad-glow);
   }
 
   &[data-variant='ghost'] {
-    background: transparent;
+    background-color: transparent;
     color: var(--aq-muted-fg);
   }
 
   &[data-variant='ghost']:not(:disabled):hover {
-    background: var(--aq-accent);
-    color: var(--aq-accent-fg);
+    background-color: var(--aq-primary-soft);
+    color: var(--aq-primary);
   }
 
   &[data-variant='destructive'] {
-    background: var(--aq-destructive);
     color: var(--aq-destructive-fg);
+    background-color: var(--aq-destructive);
+    background-image: linear-gradient(180deg, oklch(1 0 0 / 0.16), oklch(1 0 0 / 0) 50%);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.25),
+      0 8px 20px -10px color-mix(in oklab, var(--aq-destructive) 60%, transparent);
   }
 
   &[data-variant='destructive']:not(:disabled):hover {
-    background: color-mix(in oklab, var(--aq-destructive) 85%, #000);
+    filter: brightness(1.06);
   }
 `;
 

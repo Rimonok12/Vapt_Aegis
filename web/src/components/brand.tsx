@@ -21,12 +21,14 @@ const Badge = styled.div`
   width: 40px;
   height: 40px;
   border-radius: ${radiusLg};
-  background-color: var(--aq-primary);
-  background-image: linear-gradient(145deg, var(--aq-highlight), transparent 60%);
-  color: var(--aq-primary-fg);
+  background-color: var(--aq-grad-from);
+  background-image:
+    linear-gradient(180deg, oklch(1 0 0 / 0.22), oklch(1 0 0 / 0) 55%),
+    linear-gradient(135deg, var(--aq-grad-from), var(--aq-grad-to));
+  color: var(--aq-grad-fg);
   box-shadow:
-    var(--aq-shadow-md),
-    0 8px 22px -10px color-mix(in oklab, var(--aq-primary) 80%, transparent);
+    inset 0 1px 0 oklch(1 0 0 / 0.35),
+    0 8px 22px -10px var(--aq-grad-glow);
 `;
 
 const Tagline = styled.p`

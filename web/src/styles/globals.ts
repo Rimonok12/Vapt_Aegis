@@ -64,6 +64,16 @@ globalStyle`
     --aq-highlight: oklch(1 0 0 / 0.75);
     --aq-glow: oklch(0.5 0.19 258 / 0.1);
 
+    /* Premium blue gradient (buttons, brand) and frosted-glass surfaces. */
+    --aq-grad-from: oklch(0.52 0.21 264);
+    --aq-grad-to: oklch(0.62 0.15 226);
+    --aq-grad-fg: oklch(0.99 0 0);
+    --aq-grad-glow: oklch(0.55 0.2 258 / 0.42);
+    --aq-glass: oklch(1 0 0 / 0.62);
+    --aq-glass-strong: oklch(1 0 0 / 0.82);
+    --aq-glass-border: oklch(0.55 0.12 258 / 0.18);
+    --aq-glass-shine: oklch(1 0 0 / 0.9);
+
     --aq-grid: oklch(0.92 0.006 255);
   }
 
@@ -104,6 +114,15 @@ globalStyle`
 
     --aq-highlight: oklch(1 0 0 / 0.06);
     --aq-glow: oklch(0.68 0.16 254 / 0.12);
+
+    --aq-grad-from: oklch(0.56 0.2 264);
+    --aq-grad-to: oklch(0.64 0.14 226);
+    --aq-grad-fg: oklch(0.99 0 0);
+    --aq-grad-glow: oklch(0.6 0.19 258 / 0.45);
+    --aq-glass: oklch(0.24 0.02 258 / 0.55);
+    --aq-glass-strong: oklch(0.22 0.02 258 / 0.78);
+    --aq-glass-border: oklch(0.75 0.1 250 / 0.16);
+    --aq-glass-shine: oklch(1 0 0 / 0.1);
 
     --aq-grid: oklch(0.27 0.02 258);
   }

@@ -4,10 +4,12 @@ import { styled } from '@yak/react';
 import { cn } from '@/lib/utils';
 import { radiusLg, radiusSm, space4, space5, textLg, textSm, textXs } from '@/styles/tokens';
 
+/* Glass panel: translucent, blurred, faint blue edge, lit top highlight. */
 const Root = styled.div`
-  background: var(--aq-card);
+  background-color: var(--aq-glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
   color: var(--aq-card-fg);
-  border: 1px solid var(--aq-border);
+  border: 1px solid color-mix(in oklab, var(--aq-primary) 10%, var(--aq-border));
   border-radius: ${radiusLg};
   box-shadow:
     var(--aq-shadow-sm),
@@ -110,7 +112,8 @@ const Stat = styled(Root)`
       color-mix(in oklab, var(--aq-stat-accent) 9%, transparent),
       transparent 60%
     ),
-    var(--aq-card);
+    var(--aq-glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
 
   &::before {
     content: '';

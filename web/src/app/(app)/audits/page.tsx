@@ -33,7 +33,8 @@ const Tile = styled(Link)`
   padding: 18px 20px;
   border: 1px solid var(--aq-border);
   border-radius: ${radiusLg};
-  background: var(--aq-card);
+  background-color: var(--aq-glass-strong);
+  backdrop-filter: blur(16px) saturate(1.4);
   box-shadow:
     var(--aq-shadow-sm),
     inset 0 1px 0 var(--aq-highlight);
