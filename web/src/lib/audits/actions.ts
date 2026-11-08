@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { getFramework, sanitizeAnswers, scoreAudit } from '@/lib/audits/frameworks';
 import { requireAdmin } from '@/lib/auth/session';
-import { planOf } from '@/lib/plans';
+import { activePlan } from '@/lib/plans';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
@@ -19,7 +19,7 @@ export async function createAudit(formData: FormData): Promise<void> {
   const session = await requireAdmin();
   const organizationId = session.profile.organization_id;
   if (!organizationId) redirect('/audits?error=no-org');
-  if (!planOf(session.organization?.plan).itAudits) redirect('/pricing');
+  if (!activePlan(session.organization).itAudits) redirect('/pricing');
 
   const framework = getFramework(String(formData.get('framework') ?? ''));
   if (!framework) redirect('/audits?error=framework');

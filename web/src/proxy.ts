@@ -13,6 +13,9 @@ const PUBLIC_ROUTES = [
   '/reset-password',
   '/auth',
   '/api/auth',
+  // Provider callbacks/webhooks: each handler verifies with the provider itself.
+  '/api/kyc',
+  '/api/billing',
   '/verify',
   '/pricing',
 ];

@@ -6,6 +6,8 @@ import { Brand } from '@/components/brand';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { VerifyForm } from '@/components/auth/verify-form';
 import { signOut } from '@/lib/auth/actions';
+import { diditConfigured } from '@/lib/auth/didit';
+import { env } from '@/lib/env';
 import { getSession } from '@/lib/auth/session';
 import { Button } from '@/components/ui/button';
 
@@ -14,8 +16,12 @@ export const metadata: Metadata = { title: 'Verify identity' };
 // Per-request page: renders the signed-in user's email and redirects.
 export const instant = false;
 
-export default async function VerifyPage() {
-  const session = await getSession();
+export default async function VerifyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kyc?: string; message?: string }>;
+}) {
+  const [session, query] = await Promise.all([getSession(), searchParams]);
   if (!session) redirect('/signin?next=/verify');
   if (session.profile.nid_verified) redirect('/dashboard');
 
@@ -76,7 +82,18 @@ export default async function VerifyPage() {
           </p>
         </div>
 
-        <VerifyForm email={session.email} />
+        <VerifyForm
+          email={session.email}
+          usesDidit={!env().porichoyKey && diditConfigured()}
+          notice={
+            query.kyc && query.message
+              ? {
+                  tone: query.kyc === 'review' || query.kyc === 'pending' ? 'review' : 'error',
+                  text: query.message.slice(0, 200),
+                }
+              : undefined
+          }
+        />
 
         <form action={signOut} style={{ display: 'flex', justifyContent: 'center' }}>
           <Button variant="ghost" size="sm" type="submit">

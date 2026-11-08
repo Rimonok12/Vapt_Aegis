@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   ClipboardCheck,
+  CreditCard,
   FileText,
   Gauge,
   LayoutDashboard,
@@ -37,7 +38,7 @@ import {
 export type NavItem = {
   href: string;
   label: string;
-  icon: 'dashboard' | 'reports' | 'risk' | 'audits' | 'uploads' | 'tenants';
+  icon: 'dashboard' | 'reports' | 'risk' | 'audits' | 'uploads' | 'tenants' | 'billing';
   admin?: boolean;
 };
 
@@ -48,6 +49,7 @@ export const APP_NAV: NavItem[] = [
   { href: '/audits', label: 'IT audits', icon: 'audits' },
   { href: '/admin/uploads', label: 'Upload scan', icon: 'uploads', admin: true },
   { href: '/admin/tenants', label: 'Tenants', icon: 'tenants', admin: true },
+  { href: '/billing', label: 'Billing', icon: 'billing', admin: true },
 ];
 
 function NavIcon({ name }: { name: NavItem['icon'] }) {
@@ -64,6 +66,8 @@ function NavIcon({ name }: { name: NavItem['icon'] }) {
       return <Upload size={16} />;
     case 'tenants':
       return <Users size={16} />;
+    case 'billing':
+      return <CreditCard size={16} />;
   }
 }
 

@@ -22,15 +22,13 @@ export async function verifyNationalId(
   nid: string,
   dob: { year: number; month: number; date: number }
 ): Promise<PorichoyResult> {
-  const { porichoyUrl, porichoyKey, porichoyMock } = env();
+  const { porichoyUrl, porichoyKey } = env();
 
   if (!porichoyKey) {
-    // Mock mode (see .env.example): the input has already passed nidSchema, so
-    // any well-formed NID + DOB is accepted. On by default in development; a
-    // production deploy must opt in explicitly with PORICHOY_MOCK=true so it
-    // never silently skips identity checks.
-    if (!isProd() || porichoyMock) return offlineCheck(nid, dob);
-    return { ok: false, code: 503, message: 'Verification service is not configured yet.' };
+    // Local development only: accept any well-formed NID + DOB. Production
+    // never falls back to this — it needs Porichoy or Didit configured.
+    if (!isProd()) return offlineCheck(nid, dob);
+    return { ok: false, code: 503, message: 'Identity verification is not switched on yet.' };
   }
 
   let response: Response;

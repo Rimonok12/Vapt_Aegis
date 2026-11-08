@@ -6,7 +6,9 @@ import { Brand } from '@/components/brand';
 import { SiteNav } from '@/components/landing/site-nav';
 import { Reveal } from '@/components/motion/reveal';
 import { AnchorButton } from '@/components/ui/button';
+import { shurjopayConfigured } from '@/lib/billing/shurjopay';
 import {
+  CARD_PLANS,
   formatBdt,
   paymentUrl,
   PLAN_ORDER,
@@ -303,14 +305,14 @@ function PlanCta({ plan }: { plan: Plan }) {
       </AnchorButton>
     );
   }
-  const pay = paymentUrl(plan.id);
+  const inApp = shurjopayConfigured() && CARD_PLANS.includes(plan.id);
+  const pay = inApp ? '/billing' : paymentUrl(plan.id);
   return (
     <>
       {pay ? (
         <AnchorButton
           href={pay}
-          target="_blank"
-          rel="noopener noreferrer"
+          {...(inApp ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
           variant={plan.highlight ? 'primary' : 'outline'}
           size="lg"
         >

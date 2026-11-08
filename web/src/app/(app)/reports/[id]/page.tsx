@@ -21,7 +21,7 @@ import { Table, TableScroll, Td, Th } from '@/components/ui/table';
 import { getAssetMap, type AssetHit, type AssetMap } from '@/lib/assets';
 import { requireVerifiedUser } from '@/lib/auth/session';
 import { getReport } from '@/lib/data/reports';
-import { planOf } from '@/lib/plans';
+import { activePlan } from '@/lib/plans';
 import { formatDate, formatDateTime, number } from '@/lib/format';
 import { riskBand, totalFindings, type Finding, type Severity } from '@/lib/types';
 import { radiusMd, textSm, textXs } from '@/styles/tokens';
@@ -402,7 +402,7 @@ export default async function ReportDetailPage({ params }: { params: Promise<{ i
 
   // Per-asset view: admins only, on plans that include it (migration 002).
   const isAdmin = session.profile.role === 'admin';
-  const plan = planOf(session.organization?.plan);
+  const plan = activePlan(session.organization);
   const assets: AssetMap | null =
     isAdmin && plan.perAssetView ? await getAssetMap(report.id, report.organization_id) : null;
   const findingTitle = new Map(report.findings.map((f) => [f.id, f] as const));

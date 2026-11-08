@@ -15,7 +15,7 @@ import { FRAMEWORKS, getFramework, scoreAudit } from '@/lib/audits/frameworks';
 import { requireVerifiedUser } from '@/lib/auth/session';
 import { listAudits } from '@/lib/data/audits';
 import { relativeTime } from '@/lib/format';
-import { planOf } from '@/lib/plans';
+import { activePlan } from '@/lib/plans';
 import { radiusLg, radiusMd, textSm } from '@/styles/tokens';
 
 export const metadata: Metadata = { title: 'IT audits' };
@@ -138,7 +138,7 @@ export default async function AuditsPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const [session, { error }] = await Promise.all([requireVerifiedUser(), searchParams]);
-  const plan = planOf(session.organization?.plan);
+  const plan = activePlan(session.organization);
   const isAdmin = session.profile.role === 'admin';
   const { audits, missing } = await listAudits();
 

@@ -108,6 +108,23 @@ export function planOf(value: string | null | undefined): Plan {
   return PLANS[(value as PlanId) ?? 'trial'] ?? PLANS.trial;
 }
 
+/**
+ * The plan an organisation may use right now. A paid period that has run out
+ * (`plan_renews_at` in the past) falls back to the trial; a plan set by hand
+ * without a renewal date never expires.
+ */
+export function activePlan(
+  org: { plan?: string | null; plan_renews_at?: string | null } | null | undefined
+): Plan {
+  if (org?.plan_renews_at && new Date(org.plan_renews_at).getTime() < Date.now()) {
+    return PLANS.trial;
+  }
+  return planOf(org?.plan);
+}
+
+/** Plans a client can buy by card on the billing page (Enterprise is quoted). */
+export const CARD_PLANS: PlanId[] = ['starter', 'business'];
+
 /** ৳1,50,000 — Bangladeshi (lakh) digit grouping. */
 export function formatBdt(amount: number): string {
   return `৳${amount.toLocaleString('en-IN')}`;

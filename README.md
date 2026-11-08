@@ -79,7 +79,8 @@ supabase/   schema.sql + migrations
 
 - **Web:** a Vercel project with root `web/`. Set `NEXT_PUBLIC_MAX_UPLOAD_MB=4` (Vercel's request body limit is 4.5 MB).
 - **Backend:** its own Vercel project from `backend/` (FastAPI preset via `vercel.json`), or Docker / Render with `render.yaml`.
-- Set `PORICHOY_MOCK=true` only on demo deployments; production without a Porichoy key blocks verification.
+- Identity: production needs `PORICHOY_API_KEY` or Didit (`DIDIT_API_KEY`, `DIDIT_WORKFLOW_ID`, `DIDIT_WEBHOOK_SECRET`); without either, new users cannot verify.
+- Payments: set the `SHURJOPAY_*` variables and run `supabase/migrations/003_payments.sql` to turn on card checkout at `/billing`.
 
 ## Privacy model
 

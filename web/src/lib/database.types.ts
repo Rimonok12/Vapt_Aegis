@@ -11,6 +11,7 @@ export type ReportStatus = 'processing' | 'ready' | 'failed';
 export type ScanSource = 'nessus' | 'nmap' | 'json';
 export type PlanId = 'trial' | 'starter' | 'business' | 'enterprise';
 export type AuditStatus = 'draft' | 'completed';
+export type PaymentStatus = 'initiated' | 'paid' | 'failed' | 'cancelled';
 
 export interface Database {
   public: {
@@ -218,6 +219,46 @@ export interface Database {
           status?: AuditStatus;
           updated_at?: string;
           completed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      payments: {
+        Row: {
+          id: string;
+          organization_id: string;
+          plan: PlanId;
+          amount_bdt: number;
+          provider: string;
+          customer_order_id: string;
+          provider_order_id: string | null;
+          status: PaymentStatus;
+          method: string | null;
+          bank_trx_id: string | null;
+          created_by: string | null;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          plan: PlanId;
+          amount_bdt: number;
+          provider?: string;
+          customer_order_id: string;
+          provider_order_id?: string | null;
+          status?: PaymentStatus;
+          method?: string | null;
+          bank_trx_id?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          paid_at?: string | null;
+        };
+        Update: {
+          provider_order_id?: string | null;
+          status?: PaymentStatus;
+          method?: string | null;
+          bank_trx_id?: string | null;
+          paid_at?: string | null;
         };
         Relationships: [];
       };

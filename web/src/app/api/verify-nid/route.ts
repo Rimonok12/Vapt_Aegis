@@ -1,8 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
+import { createDiditSession, diditConfigured } from '@/lib/auth/didit';
+import { markNidVerified, recordAttempt } from '@/lib/auth/identity';
 import { getSession } from '@/lib/auth/session';
 import { nidSchema, toPorichoyDate } from '@/lib/auth/nid';
 import { verifyNationalId } from '@/lib/auth/porichoy';
+import { env } from '@/lib/env';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 /** Max failures inside the lockout window before we stop calling the gateway. */
@@ -49,32 +52,33 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Didit (card photo + live selfie) is used unless a direct Porichoy key is set.
+  if (!env().porichoyKey && diditConfigured()) {
+    const started = await createDiditSession({
+      userId: session.userId,
+      nid: parsed.data.nid,
+      dateOfBirth: parsed.data.dateOfBirth,
+      callback: `${env().appUrl}/api/kyc/didit/callback`,
+    });
+    if (!started.ok) {
+      return NextResponse.json({ message: started.message }, { status: 502 });
+    }
+    return NextResponse.json({ message: 'Continue on the secure page.', redirect: started.url, external: true });
+  }
+
   const result = await verifyNationalId(parsed.data.nid, toPorichoyDate(parsed.data.dateOfBirth));
 
   // Record the attempt — success flag + coarse reason only, never the NID itself.
-  await admin.from('nid_verification_attempts').insert({
-    user_id: session.userId,
-    succeeded: result.ok,
-    reason: result.ok ? null : `http:${result.code}`,
-  });
+  await recordAttempt(session.userId, result.ok, result.ok ? null : `http:${result.code}`);
 
   if (!result.ok) {
     return NextResponse.json(
       { message: result.message || 'National ID and date of birth do not match.' },
-      { status: 400 }
+      { status: result.code === 503 ? 503 : 400 }
     );
   }
 
-  const { error: updateError } = await admin
-    .from('profiles')
-    .update({
-      nid_verified: true,
-      nid_verified_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', session.userId);
-
-  if (updateError) {
+  if (!(await markNidVerified(session.userId))) {
     return NextResponse.json({ message: 'Verified but failed to save.' }, { status: 500 });
   }
 

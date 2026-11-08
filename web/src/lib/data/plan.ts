@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { planOf, type Plan } from '@/lib/plans';
+import { activePlan, type Plan } from '@/lib/plans';
 
 export type PlanUsage = {
   plan: Plan;
@@ -25,7 +25,7 @@ export async function getPlanUsage(organizationId: string): Promise<PlanUsage> {
     .select('*')
     .eq('id', organizationId)
     .maybeSingle();
-  const plan = planOf((org as { plan?: string } | null)?.plan);
+  const plan = activePlan(org as { plan?: string; plan_renews_at?: string | null } | null);
 
   let query = admin
     .from('reports')

@@ -14,7 +14,13 @@ type Env = {
   backendToken: string;
   porichoyUrl: string;
   porichoyKey: string;
-  porichoyMock: boolean;
+  diditApiKey: string;
+  diditWorkflowId: string;
+  diditWebhookSecret: string;
+  shurjopayUrl: string;
+  shurjopayUsername: string;
+  shurjopayPassword: string;
+  shurjopayPrefix: string;
   appUrl: string;
   bootstrapAdminEmail: string;
   nodeEnv: string;
@@ -52,9 +58,18 @@ export function env(): Env {
       'https://porichoy-backend.porichoy.dev/api/v1'
     ),
     porichoyKey: optional('PORICHOY_API_KEY', process.env.PORICHOY_API_KEY, ''),
-    porichoyMock: ['1', 'true', 'yes'].includes(
-      (process.env.PORICHOY_MOCK ?? '').trim().toLowerCase()
+    diditApiKey: (process.env.DIDIT_API_KEY ?? '').trim(),
+    diditWorkflowId: (process.env.DIDIT_WORKFLOW_ID ?? '').trim(),
+    diditWebhookSecret: (process.env.DIDIT_WEBHOOK_SECRET ?? '').trim(),
+    // Live engine by default; point at https://sandbox.shurjopayment.com to test.
+    shurjopayUrl: optional(
+      'SHURJOPAY_API_URL',
+      process.env.SHURJOPAY_API_URL,
+      'https://engine.shurjopayment.com'
     ),
+    shurjopayUsername: (process.env.SHURJOPAY_USERNAME ?? '').trim(),
+    shurjopayPassword: process.env.SHURJOPAY_PASSWORD ?? '',
+    shurjopayPrefix: (process.env.SHURJOPAY_PREFIX ?? '').trim(),
     appUrl: optional(
       'NEXT_PUBLIC_APP_URL',
       process.env.NEXT_PUBLIC_APP_URL,

@@ -9,7 +9,16 @@ import { FieldDescription, FieldError, Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function VerifyForm({ email }: { email: string | null }) {
+export function VerifyForm({
+  email,
+  usesDidit,
+  notice,
+}: {
+  email: string | null;
+  /** Card photo + selfie on Didit's hosted page after this form. */
+  usesDidit: boolean;
+  notice?: { tone: 'review' | 'error'; text: string };
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +42,7 @@ export function VerifyForm({ email }: { email: string | null }) {
       });
       const data = (await response.json().catch(() => ({
         message: `Verification failed (HTTP ${response.status}). Please try again.`,
-      }))) as { message?: string; redirect?: string };
+      }))) as { message?: string; redirect?: string; external?: boolean };
 
       if (!response.ok) {
         setError(data.message ?? 'Verification failed.');
@@ -41,6 +50,10 @@ export function VerifyForm({ email }: { email: string | null }) {
         return;
       }
 
+      if (data.external && data.redirect) {
+        window.location.assign(data.redirect);
+        return;
+      }
       router.replace(data.redirect ?? '/dashboard');
       router.refresh();
     } catch {
@@ -60,6 +73,9 @@ export function VerifyForm({ email }: { email: string | null }) {
         <CardDescription>
           {email ? `Confirming identity for ${email}. ` : ''}
           This one-time check unlocks your organisation&apos;s reports.
+          {usesDidit
+            ? ' Next you will photograph your NID card and take a quick selfie on a secure page.'
+            : ''}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -77,7 +93,7 @@ export function VerifyForm({ email }: { email: string | null }) {
                 required
               />
               <FieldDescription>
-                Used only to call the Porichoy gateway. Never stored or logged.
+                Must match the number printed on your card. Never stored or logged.
               </FieldDescription>
             </div>
 
@@ -85,6 +101,12 @@ export function VerifyForm({ email }: { email: string | null }) {
               <Label htmlFor="dateOfBirth">Date of birth</Label>
               <Input id="dateOfBirth" name="dateOfBirth" type="date" required max={today()} />
             </div>
+
+            {notice && !error ? (
+              <FieldError role="status" style={notice.tone === 'review' ? { color: 'var(--aq-muted-fg)' } : undefined}>
+                <AlertCircle size={14} /> {notice.text}
+              </FieldError>
+            ) : null}
 
             {error ? (
               <FieldError role="alert">
@@ -99,7 +121,7 @@ export function VerifyForm({ email }: { email: string | null }) {
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={16} /> Verify identity
+                  <ShieldCheck size={16} /> {usesDidit ? 'Continue to card & selfie check' : 'Verify identity'}
                 </>
               )}
             </Button>
