@@ -4,9 +4,10 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 
 import { AuditForm } from '@/components/audits/audit-form';
+import { DeleteAuditButton } from '@/components/audits/delete-audit-button';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { reopenAudit } from '@/lib/audits/actions';
 import { getFramework } from '@/lib/audits/frameworks';
 import { requireVerifiedUser } from '@/lib/auth/session';
@@ -64,11 +65,12 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
             </Badge>
             {completed && isAdmin ? (
               <form action={reopenAudit.bind(null, audit.id)}>
-                <Button type="submit" variant="outline" size="sm">
+                <SubmitButton variant="outline" size="sm" pendingLabel="Reopening…">
                   <RotateCcw size={14} /> Reopen
-                </Button>
+                </SubmitButton>
               </form>
             ) : null}
+            {isAdmin ? <DeleteAuditButton auditId={audit.id} /> : null}
           </>
         }
       />

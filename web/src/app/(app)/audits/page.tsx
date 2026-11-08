@@ -6,12 +6,12 @@ import { styled } from '@yak/react';
 import { ScoreRing } from '@/components/audits/score-ring';
 import { PageEnter } from '@/components/motion/page-enter';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { createAudit } from '@/lib/audits/actions';
-import { FRAMEWORKS, getFramework } from '@/lib/audits/frameworks';
+import { FRAMEWORKS, getFramework, scoreAudit } from '@/lib/audits/frameworks';
 import { requireVerifiedUser } from '@/lib/auth/session';
 import { listAudits } from '@/lib/data/audits';
 import { relativeTime } from '@/lib/format';
@@ -126,8 +126,18 @@ const Notice = styled.div`
   }
 `;
 
-export default async function AuditsPage() {
-  const session = await requireVerifiedUser();
+const ERRORS: Record<string, string> = {
+  create: 'The audit could not be created. Please try again.',
+  framework: 'Pick one of the checklists first.',
+  'no-org': 'Your account is not attached to an organisation yet.',
+};
+
+export default async function AuditsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const [session, { error }] = await Promise.all([requireVerifiedUser(), searchParams]);
   const plan = planOf(session.organization?.plan);
   const isAdmin = session.profile.role === 'admin';
   const { audits, missing } = await listAudits();
@@ -139,6 +149,12 @@ export default async function AuditsPage() {
         title="IT audits"
         description="Score your controls against ISO 27001 and the Bangladesh Bank ICT Security Guideline, next to your scan results."
       />
+
+      {error && ERRORS[error] ? (
+        <Notice role="alert" style={{ borderColor: 'var(--aq-sev-critical)' }}>
+          <span>{ERRORS[error]}</span>
+        </Notice>
+      ) : null}
 
       {missing ? (
         <Notice>
@@ -189,9 +205,9 @@ export default async function AuditsPage() {
                   maxLength={120}
                   style={{ flex: '1 1 240px' }}
                 />
-                <Button type="submit">
+                <SubmitButton pendingLabel="Starting…">
                   <ClipboardCheck size={15} /> Start audit
-                </Button>
+                </SubmitButton>
               </div>
             </NewForm>
           </CardContent>
@@ -213,14 +229,16 @@ export default async function AuditsPage() {
             <Grid>
               {audits.map((audit) => {
                 const framework = getFramework(audit.framework);
+                const progress = framework ? scoreAudit(framework, audit.answers ?? {}) : null;
                 return (
                   <Tile key={audit.id} href={`/audits/${audit.id}`}>
                     <ScoreRing score={audit.score} size={64} />
                     <div style={{ minWidth: 0, display: 'grid', gap: 6 }}>
                       <h3>{audit.title}</h3>
                       <p>
-                        {framework?.short ?? audit.framework} · updated{' '}
-                        {relativeTime(audit.updated_at)}
+                        {framework?.short ?? audit.framework}
+                        {progress ? ` · ${progress.answered}/${progress.total} answered` : ''} ·
+                        updated {relativeTime(audit.updated_at)}
                       </p>
                       <Badge tone={audit.status === 'completed' ? 'success' : 'info'}>
                         {audit.status === 'completed' ? 'Completed' : 'In progress'}

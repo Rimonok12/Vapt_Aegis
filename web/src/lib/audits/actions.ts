@@ -98,6 +98,19 @@ export async function saveAudit(
   return { ok: true, score };
 }
 
+export async function deleteAudit(auditId: string): Promise<void> {
+  const session = await requireAdmin();
+  const organizationId = session.profile.organization_id;
+  if (!organizationId || !z.string().uuid().safeParse(auditId).success) redirect('/audits');
+  await createAdminClient()
+    .from('audits')
+    .delete()
+    .eq('id', auditId)
+    .eq('organization_id', organizationId);
+  revalidatePath('/audits');
+  redirect('/audits');
+}
+
 export async function reopenAudit(auditId: string): Promise<void> {
   const session = await requireAdmin();
   const organizationId = session.profile.organization_id;

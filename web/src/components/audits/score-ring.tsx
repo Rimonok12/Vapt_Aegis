@@ -1,5 +1,13 @@
 /** Circular 0–100 compliance score. Pure SVG, works on server and client. */
-export function ScoreRing({ score, size = 112 }: { score: number | null; size?: number }) {
+export function ScoreRing({
+  score,
+  size = 112,
+  caption = 'compliance',
+}: {
+  score: number | null;
+  size?: number;
+  caption?: string;
+}) {
   const stroke = 9;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -52,7 +60,7 @@ export function ScoreRing({ score, size = 112 }: { score: number | null; size?: 
         </strong>
         {size >= 90 ? (
           <span style={{ fontSize: '0.68rem', color: 'var(--aq-muted-fg)', marginTop: 3 }}>
-            compliance
+            {caption}
           </span>
         ) : null}
       </div>

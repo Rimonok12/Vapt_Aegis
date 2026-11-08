@@ -333,9 +333,18 @@ export function AuditForm({
       <Side>
         <Card>
           <CardContent style={{ display: 'grid', gap: 16, justifyItems: 'center', paddingTop: 22 }}>
-            <ScoreRing score={result.score} />
+            <ScoreRing
+              score={result.score}
+              caption={result.answered < result.total ? 'so far' : 'compliance'}
+            />
             <div style={{ fontSize: textSm, color: 'var(--aq-muted-fg)', textAlign: 'center' }}>
               {result.answered} of {result.total} controls answered
+              {result.answered > 0 && result.answered < result.total ? (
+                <>
+                  <br />
+                  The score covers answered controls only.
+                </>
+              ) : null}
             </div>
             <div style={{ display: 'grid', gap: 12, width: '100%' }}>
               {result.byDomain.map((domain) => (
